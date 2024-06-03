@@ -31,11 +31,11 @@
         android:padding="12dp"
         android:scaleType="fitCenter"
         android:contentDescription="@string/switch_to_front_camera"
-        app:srcCompat="@drawable/baseline_switch_camera_white_48"
-        android:onClick="clickedSwitchCamera"
+        android:src="@drawable/switch_camera"
         android:background="@drawable/circle_background"
         android:backgroundTint="@color/icons_background_tint"
         android:backgroundTintMode="src_in"
+        android:onClick="clickedSwitchCamera"
         />
 
     <ImageButton
@@ -90,7 +90,7 @@
         android:padding="10dp"
         android:scaleType="fitCenter"
         android:contentDescription="@string/switch_to_video"
-        app:srcCompat="@drawable/take_video"
+        app:srcCompat="@drawable/switch_video"
         android:alpha="0.55"
         android:onClick="clickedSwitchVideo"
         android:background="@null"
@@ -177,7 +177,7 @@
         android:padding="0dp"
         android:scaleType="fitCenter"
         android:contentDescription="@string/gallery"
-        app:srcCompat="@drawable/baseline_photo_library_white_48"
+        android:src="@drawable/gallery"
         android:background="#00000000"
         android:backgroundTint="@color/icons_background_tint"
         android:backgroundTintMode="src_in"
@@ -209,7 +209,6 @@
         android:contentDescription="@string/action_popup"
         app:srcCompat="@drawable/popup"
         android:background="@color/icons_background"
-        android:backgroundTint="@color/icons_background_tint"
         android:backgroundTintMode="src_in"
         android:onClick="clickedPopupSettings"
         />
@@ -430,10 +429,7 @@
         android:padding="10dp"
         android:scaleType="fitCenter"
         android:contentDescription="@string/trash"
-        app:srcCompat="@drawable/baseline_delete_white_48"
-        android:background="@color/icons_background"
-        android:backgroundTint="@color/icons_background_tint"
-        android:backgroundTintMode="src_in"
+        android:src="@drawable/trash"
         android:onClick="clickedTrash"
         android:visibility="gone"
         />

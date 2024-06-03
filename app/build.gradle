@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 34
     compileOptions.encoding = 'UTF-8'
 
     defaultConfig {
-        applicationId "net.sourceforge.opencamera"
+        applicationId "com.githcode.magiccamera.owcamera"
         minSdkVersion 15
-        targetSdkVersion 33
+        targetSdkVersion 34
         //compileSdkVersion 31 // needed to support appcompat:1.4.0 (which we need for emoji policy support, and not yet ready to target SDK 30)
 
         renderscriptTargetApi 21
@@ -15,7 +15,7 @@ android {
         // need build tools at least 20 at least to support ScriptIntrinsicHistogram
         // also need build tools at least 21 to avoid Google Play 64-bit warning (required from 1 August 2019)
 
-        testApplicationId "net.sourceforge.opencamera.test"
+        testApplicationId "com.githcode.magiccamera.owcamera.test"
         //testInstrumentationRunner "android.test.InstrumentationTestRunner"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,7 +36,7 @@ android {
         abortOnError false
         checkReleaseBuilds false
     }
-    namespace 'net.sourceforge.opencamera'
+    namespace 'com.githcode.magiccamera.owcamera'
     buildFeatures {
         renderScript true
     }

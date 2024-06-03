@@ -41,7 +41,7 @@
         >
         <!-- should not change the android:name, including moving to a subpackage - see http://android-developers.blogspot.co.uk/2011/06/things-that-cannot-change.html -->
         <activity
-            android:name="net.sourceforge.opencamera.MainActivity"
+            android:name="com.githcode.magiccamera.owcamera.MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:clearTaskOnLaunch="true"
             android:exported="true"
@@ -79,7 +79,7 @@
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
         <activity
-            android:name="net.sourceforge.opencamera.remotecontrol.DeviceScanner"
+            android:name="com.githcode.magiccamera.owcamera.remotecontrol.DeviceScanner"
             android:label="@string/scan_ble"
             android:exported="false"
         >
@@ -106,7 +106,7 @@
                  <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <!-- <intent-filter> 
-                <action android:name="net.sourceforge.opencamera.LAUNCH_OPEN_CAMERA"/> 
+                <action android:name="com.githcode.magiccamera.owcamera.LAUNCH_OPEN_CAMERA"/>
             </intent-filter>  -->
             <meta-data
                android:name="android.appwidget.provider"
@@ -127,7 +127,7 @@
         </receiver>
         <!-- should not change the android:name, including moving to a subpackage - see http://android-developers.blogspot.co.uk/2011/06/things-that-cannot-change.html -->
         <service
-            android:name="net.sourceforge.opencamera.MyTileService"
+            android:name="com.githcode.magiccamera.owcamera.MyTileService"
             android:icon="@drawable/ic_photo_camera_white_48dp"
             android:label="@string/camera"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
@@ -138,7 +138,7 @@
         </service>
         <!-- should not change the android:name, including moving to a subpackage - see http://android-developers.blogspot.co.uk/2011/06/things-that-cannot-change.html -->
         <service
-            android:name="net.sourceforge.opencamera.MyTileServiceVideo"
+            android:name="com.githcode.magiccamera.owcamera.MyTileServiceVideo"
             android:icon="@drawable/ic_videocam_white_48dp"
             android:label="@string/record_video"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
@@ -149,7 +149,7 @@
         </service>
         <!-- should not change the android:name, including moving to a subpackage - see http://android-developers.blogspot.co.uk/2011/06/things-that-cannot-change.html -->
         <service
-            android:name="net.sourceforge.opencamera.MyTileServiceFrontCamera"
+            android:name="com.githcode.magiccamera.owcamera.MyTileServiceFrontCamera"
             android:icon="@drawable/ic_face_white_48dp"
             android:label="@string/selfie"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
@@ -158,7 +158,7 @@
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
-        <service android:name="net.sourceforge.opencamera.remotecontrol.BluetoothLeService"
+        <service android:name="com.githcode.magiccamera.owcamera.remotecontrol.BluetoothLeService"
             android:enabled="true"
             android:exported="false"
             />
