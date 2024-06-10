@@ -33,6 +33,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -68,6 +69,7 @@ import android.speech.tts.TextToSpeech;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.exifinterface.media.ExifInterface;
 
 import android.text.InputFilter;
@@ -5233,6 +5235,10 @@ public class MainActivity extends AppCompatActivity {
                 zoomSeekBar.setOnSeekBarChangeListener(null); // clear an existing listener - don't want to call the listener when setting up the progress bar to match the existing state
                 zoomSeekBar.setMax(preview.getMaxZoom());
                 zoomSeekBar.setProgress(preview.getMaxZoom()-preview.getCameraController().getZoom());
+
+                zoomSeekBar.setProgressDrawable(getResources().getDrawable(R.drawable.seekbar_gradient));
+                updateThumbColor(zoomSeekBar, zoomSeekBar.getProgress());
+
                 zoomSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -5240,6 +5246,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(TAG, "zoom onProgressChanged: " + progress);
                         // note we zoom even if !fromUser, as various other UI controls (multitouch, volume key zoom, -/+ zoomcontrol)
                         // indirectly set zoom via this method, from setting the zoom slider
+                        updateThumbColor(seekBar, progress);
                         preview.zoomTo(preview.getMaxZoom() - progress);
                     }
 
@@ -5440,6 +5447,31 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "cameraSetup: total time for cameraSetup: " + (System.currentTimeMillis() - debug_time));
 
         this.getApplicationInterface().getDrawPreview().setDimPreview(false);
+    }
+
+    private void updateThumbColor(SeekBar seekBar, int progress) {
+        int max = seekBar.getMax();
+        int minColor = 0xFF2B398C;
+        int centerColor = 0xFFFF4082;
+        int maxColor = 0xFFFF4082;
+
+        int color;
+        if (progress <= max / 2) {
+            color = interpolateColor(minColor, centerColor, progress / (float) (max / 2));
+        } else {
+            color = interpolateColor(centerColor, maxColor, (progress - max / 2) / (float) (max / 2));
+        }
+        Drawable thumbDrawable = BlurUtil.createBlurredThumb(getApplicationContext(), color, 10f);
+        seekBar.setThumb(thumbDrawable);
+    }
+
+    private int interpolateColor(int colorStart, int colorEnd, float factor) {
+        float inverseFactor = 1 - factor;
+        int a = (int) ((colorStart >> 24 & 0xff) * inverseFactor + (colorEnd >> 24 & 0xff) * factor);
+        int r = (int) ((colorStart >> 16 & 0xff) * inverseFactor + (colorEnd >> 16 & 0xff) * factor);
+        int g = (int) ((colorStart >> 8 & 0xff) * inverseFactor + (colorEnd >> 8 & 0xff) * factor);
+        int b = (int) ((colorStart & 0xff) * inverseFactor + (colorEnd & 0xff) * factor);
+        return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
     private void setManualFocusSeekbar(final boolean is_target_distance) {

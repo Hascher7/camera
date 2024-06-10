@@ -1,5 +1,6 @@
 package com.githcode.magiccamera.owcamera.ui;
 
+import com.githcode.magiccamera.owcamera.BlurUtil;
 import com.githcode.magiccamera.owcamera.MyApplicationInterface;
 import com.githcode.magiccamera.owcamera.cameracontroller.CameraController;
 import com.githcode.magiccamera.owcamera.MainActivity;
@@ -16,7 +17,9 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
@@ -40,6 +43,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.ZoomControls;
+
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -114,8 +119,28 @@ public class MainUI {
             ColorStateList thumb_color = ColorStateList.valueOf( Color.argb(255, 255, 255, 255) );
 
             SeekBar seekBar = main_activity.findViewById(R.id.zoom_seekbar);
-            seekBar.setProgressTintList(progress_color);
-            seekBar.setThumbTintList(thumb_color);
+//            seekBar.setProgressTintList(progress_color);
+//            seekBar.setThumbTintList(thumb_color);
+
+            seekBar.setProgressDrawable(main_activity.getResources().getDrawable(R.drawable.seekbar_gradient));
+            updateThumbColor(seekBar, seekBar.getProgress());
+
+            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    updateThumbColor(seekBar, progress);
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+
+                }
+            });
 
             seekBar = main_activity.findViewById(R.id.focus_seekbar);
             seekBar.setProgressTintList(progress_color);
@@ -141,6 +166,31 @@ public class MainUI {
             seekBar.setProgressTintList(progress_color);
             seekBar.setThumbTintList(thumb_color);
         }
+    }
+
+    private void updateThumbColor(SeekBar seekBar, int progress) {
+        int max = seekBar.getMax();
+        int minColor = 0xFF2B398C;
+        int centerColor = 0xFFFF4082;
+        int maxColor = 0xFFFF4082;
+
+        int color;
+        if (progress <= max / 2) {
+            color = interpolateColor(minColor, centerColor, progress / (float) (max / 2));
+        } else {
+            color = interpolateColor(centerColor, maxColor, (progress - max / 2) / (float) (max / 2));
+        }
+        Drawable thumbDrawable = BlurUtil.createBlurredThumb(main_activity.getApplicationContext(), color, 10f);
+        seekBar.setThumb(thumbDrawable);
+    }
+
+    private int interpolateColor(int colorStart, int colorEnd, float factor) {
+        float inverseFactor = 1 - factor;
+        int a = (int) ((colorStart >> 24 & 0xff) * inverseFactor + (colorEnd >> 24 & 0xff) * factor);
+        int r = (int) ((colorStart >> 16 & 0xff) * inverseFactor + (colorEnd >> 16 & 0xff) * factor);
+        int g = (int) ((colorStart >> 8 & 0xff) * inverseFactor + (colorEnd >> 8 & 0xff) * factor);
+        int b = (int) ((colorStart & 0xff) * inverseFactor + (colorEnd & 0xff) * factor);
+        return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
     /** Similar view.setRotation(ui_rotation), but achieves this via an animation.
@@ -957,7 +1007,7 @@ public class MainUI {
     void setMarginsForSystemUIZoom(RelativeLayout.LayoutParams layoutParams, int left, int top, int right, int bottom) {
         MainActivity.SystemOrientation system_orientation = main_activity.getSystemOrientation();
         if( system_orientation == MainActivity.SystemOrientation.PORTRAIT ) {
-            layoutParams.setMargins(bottom, left, top+15, 300);
+            layoutParams.setMargins(bottom, left, top+25, 360);
         }
         else if( system_orientation == MainActivity.SystemOrientation.REVERSE_LANDSCAPE ) {
             layoutParams.setMargins(right, bottom, left, top);
