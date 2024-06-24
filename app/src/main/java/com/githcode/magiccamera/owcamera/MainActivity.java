@@ -33,6 +33,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -703,6 +704,21 @@ public class MainActivity extends AppCompatActivity {
 
         if( MyDebug.LOG )
             Log.d(TAG, "onCreate: total time for Activity startup: " + (System.currentTimeMillis() - debug_time));
+
+        findViewById(R.id.parentLayout).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                // Get the coordinates of the touch event
+                float x = event.getX();
+                float y = event.getY();
+                Rect rect = new Rect();
+                findViewById(R.id.flashContainer).getHitRect(rect);
+                if (!rect.contains((int) x, (int) y)) {
+                    findViewById(R.id.flashContainer).setVisibility(View.GONE);
+                }
+                return false;
+            }
+        });
     }
 
     /** Whether to use codepaths that are compatible with scoped storage.
@@ -2439,6 +2455,18 @@ public class MainActivity extends AppCompatActivity {
         if( MyDebug.LOG )
             Log.d(TAG, "clickedPopupSettings");
         mainUI.togglePopupSettings();
+    }
+
+    public void clickedCameraEffect(View view) {
+        if( MyDebug.LOG )
+            Log.d(TAG, "clickedCameraEffect");
+        mainUI.toggleCameraEffectSettings();
+    }
+
+    public void clickedFlashIcon(View view) {
+        if( MyDebug.LOG )
+            Log.d(TAG, "clickedCameraEffect");
+        mainUI.toggleFlashSettings();
     }
 
     private final PreferencesListener preferencesListener = new PreferencesListener();

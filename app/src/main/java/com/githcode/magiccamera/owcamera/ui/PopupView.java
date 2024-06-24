@@ -77,7 +77,7 @@ public class PopupView extends LinearLayout {
     @SuppressWarnings("FieldCanBeLocal")
     private final DecimalFormat decimal_format_1dp_force0 = new DecimalFormat("0.0");
 
-    public PopupView(Context context) {
+    public PopupView(Context context, Boolean showCameraEffect, boolean showFlashEffect) {
         super(context);
         if( MyDebug.LOG )
             Log.d(TAG, "new PopupView: " + this);
@@ -122,7 +122,7 @@ public class PopupView extends LinearLayout {
         if( MyDebug.LOG )
             Log.d(TAG, "PopupView time 2: " + (System.nanoTime() - debug_time));
 
-        if( !main_activity.getMainUI().showCycleFlashIcon() )
+        if( !main_activity.getMainUI().showCycleFlashIcon() && showFlashEffect)
         {
             List<String> supported_flash_values = preview.getSupportedFlashValues();
             if( preview.isVideo() && supported_flash_values != null ) {
@@ -146,6 +146,7 @@ public class PopupView extends LinearLayout {
                     }
                 });
             }
+            return;
         }
         if( MyDebug.LOG )
             Log.d(TAG, "PopupView time 3: " + (System.nanoTime() - debug_time));
@@ -155,6 +156,36 @@ public class PopupView extends LinearLayout {
             // don't add any more options
         }
         else {
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(main_activity);
+            if( MyDebug.LOG )
+                Log.d(TAG, "PopupView time 13: " + (System.nanoTime() - debug_time));
+
+            // white balance modes, scene modes, color effects
+            // all of these are only supported when not using extension mode
+            // popup should only be opened if we have a camera controller, but check just to be safe
+            if( preview.getCameraController() != null && !is_camera_extension ) {
+                List<String> supported_white_balances = preview.getSupportedWhiteBalances();
+                List<String> supported_white_balances_entries = null;
+                if( supported_white_balances != null ) {
+                    supported_white_balances_entries = new ArrayList<>();
+                    for(String value : supported_white_balances) {
+                        String entry = main_activity.getMainUI().getEntryForWhiteBalance(value);
+                        supported_white_balances_entries.add(entry);
+                    }
+                }
+                if (showCameraEffect) {
+                    boolean opened = false;
+                    boolean created = false;
+                    addRadioOptionsToPopup(showCameraEffect, opened, created, sharedPreferences, supported_white_balances_entries, supported_white_balances, getResources().getString(R.string.white_balance), PreferenceKeys.WhiteBalancePreferenceKey, CameraController.WHITE_BALANCE_DEFAULT, null, "TEST_WHITE_BALANCE", new RadioOptionsListener() {
+                        @Override
+                        public void onClick(String selected_value) {
+                            switchToWhiteBalance(selected_value);
+                        }
+                    });
+                    return;
+                }
+            }
+
             // make a copy of getSupportedFocusValues() so we can modify it
             List<String> supported_focus_values = preview.getSupportedFocusValues();
             MyApplicationInterface.PhotoMode photo_mode = main_activity.getApplicationInterface().getPhotoMode();
@@ -183,8 +214,6 @@ public class PopupView extends LinearLayout {
             });
             if( MyDebug.LOG )
                 Log.d(TAG, "PopupView time 4: " + (System.nanoTime() - debug_time));
-
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(main_activity);
 
             //final boolean use_expanded_menu = true;
             final boolean use_expanded_menu = false;
@@ -259,7 +288,7 @@ public class PopupView extends LinearLayout {
                 }
 
                 if( use_expanded_menu ) {
-                    addRadioOptionsToPopup(sharedPreferences, photo_modes, photo_modes, getResources().getString(R.string.photo_mode), null, null, current_mode, "TEST_PHOTO_MODE", new RadioOptionsListener() {
+                    addRadioOptionsToPopup(showCameraEffect, false, false, sharedPreferences, photo_modes, photo_modes, getResources().getString(R.string.photo_mode), null, null, current_mode, "TEST_PHOTO_MODE", new RadioOptionsListener() {
                         @Override
                         public void onClick(String selected_value) {
                             if( MyDebug.LOG )
@@ -1011,28 +1040,8 @@ public class PopupView extends LinearLayout {
                     return -1;
                 }
             });
-            if( MyDebug.LOG )
-                Log.d(TAG, "PopupView time 13: " + (System.nanoTime() - debug_time));
 
-            // white balance modes, scene modes, color effects
-            // all of these are only supported when not using extension mode
-            // popup should only be opened if we have a camera controller, but check just to be safe
             if( preview.getCameraController() != null && !is_camera_extension ) {
-                List<String> supported_white_balances = preview.getSupportedWhiteBalances();
-                List<String> supported_white_balances_entries = null;
-                if( supported_white_balances != null ) {
-                    supported_white_balances_entries = new ArrayList<>();
-                    for(String value : supported_white_balances) {
-                        String entry = main_activity.getMainUI().getEntryForWhiteBalance(value);
-                        supported_white_balances_entries.add(entry);
-                    }
-                }
-                addRadioOptionsToPopup(sharedPreferences, supported_white_balances_entries, supported_white_balances, getResources().getString(R.string.white_balance), PreferenceKeys.WhiteBalancePreferenceKey, CameraController.WHITE_BALANCE_DEFAULT, null, "TEST_WHITE_BALANCE", new RadioOptionsListener() {
-                    @Override
-                    public void onClick(String selected_value) {
-                        switchToWhiteBalance(selected_value);
-                    }
-                });
                 if( MyDebug.LOG )
                     Log.d(TAG, "PopupView time 14: " + (System.nanoTime() - debug_time));
 
@@ -1045,7 +1054,7 @@ public class PopupView extends LinearLayout {
                         supported_scene_modes_entries.add(entry);
                     }
                 }
-                addRadioOptionsToPopup(sharedPreferences, supported_scene_modes_entries, supported_scene_modes, getResources().getString(R.string.scene_mode), PreferenceKeys.SceneModePreferenceKey, CameraController.SCENE_MODE_DEFAULT, null, "TEST_SCENE_MODE", new RadioOptionsListener() {
+                addRadioOptionsToPopup(showCameraEffect, false, false, sharedPreferences, supported_scene_modes_entries, supported_scene_modes, getResources().getString(R.string.scene_mode), PreferenceKeys.SceneModePreferenceKey, CameraController.SCENE_MODE_DEFAULT, null, "TEST_SCENE_MODE", new RadioOptionsListener() {
                     @Override
                     public void onClick(String selected_value) {
                         if( preview.getCameraController() != null ) {
@@ -1073,7 +1082,7 @@ public class PopupView extends LinearLayout {
                         supported_color_effects_entries.add(entry);
                     }
                 }
-                addRadioOptionsToPopup(sharedPreferences, supported_color_effects_entries, supported_color_effects, getResources().getString(R.string.color_effect), PreferenceKeys.ColorEffectPreferenceKey, CameraController.COLOR_EFFECT_DEFAULT, null, "TEST_COLOR_EFFECT", new RadioOptionsListener() {
+                addRadioOptionsToPopup(showCameraEffect, false, false, sharedPreferences, supported_color_effects_entries, supported_color_effects, getResources().getString(R.string.color_effect), PreferenceKeys.ColorEffectPreferenceKey, CameraController.COLOR_EFFECT_DEFAULT, null, "TEST_COLOR_EFFECT", new RadioOptionsListener() {
                     @Override
                     public void onClick(String selected_value) {
                         if( preview.getCameraController() != null ) {
@@ -1085,7 +1094,6 @@ public class PopupView extends LinearLayout {
                 if( MyDebug.LOG )
                     Log.d(TAG, "PopupView time 16: " + (System.nanoTime() - debug_time));
             }
-
         }
 
         if( MyDebug.LOG )
@@ -1565,7 +1573,11 @@ public class PopupView extends LinearLayout {
         protected abstract void onClick(String selected_value);
     }
 
-    /** Adds a set of radio options to the popup menu.
+    /**
+     * Adds a set of radio options to the popup menu.
+     *
+     * @param opened
+     * @param created
      * @param sharedPreferences         The SharedPreferences.
      * @param supported_options_entries The strings to display on the radio options.
      * @param supported_options_values  A corresponding array of values. These aren't shown to the
@@ -1587,7 +1599,7 @@ public class PopupView extends LinearLayout {
      *                                  not null, instead selecting an option will call the
      *                                  listener.
      */
-    private void addRadioOptionsToPopup(final SharedPreferences sharedPreferences, final List<String> supported_options_entries, final List<String> supported_options_values, final String title, final String preference_key, final String default_value, final String current_option_value, final String test_key, final RadioOptionsListener listener) {
+    private void addRadioOptionsToPopup(Boolean showCameraEffect, boolean opened, boolean created, final SharedPreferences sharedPreferences, final List<String> supported_options_entries, final List<String> supported_options_values, final String title, final String preference_key, final String default_value, final String current_option_value, final String test_key, final RadioOptionsListener listener) {
         if( MyDebug.LOG )
             Log.d(TAG, "addRadioOptionsToPopup: " + title);
         if( supported_options_entries != null ) {
@@ -1599,7 +1611,7 @@ public class PopupView extends LinearLayout {
             final Button button = button_view.findViewById(R.id.button);
 
             button.setBackgroundColor(Color.TRANSPARENT); // workaround for Android 6 crash!
-            button.setText(title + "...");
+            button.setText(title);
             button.setAllCaps(false);
             button.setTextSize(TypedValue.COMPLEX_UNIT_SP, title_text_size_dip);
             this.addView(button);
@@ -1613,62 +1625,72 @@ public class PopupView extends LinearLayout {
             if( MyDebug.LOG )
                 Log.d(TAG, "addRadioOptionsToPopup time 2: " + (System.nanoTime() - debug_time));
 
-            button.setOnClickListener(new OnClickListener() {
-                private boolean opened = false;
-                private boolean created = false;
-
-                @Override
-                public void onClick(View view) {
-                    if( MyDebug.LOG )
-                        Log.d(TAG, "clicked to open radio buttons menu: " + title);
-                    if( opened ) {
-                        //rg.removeAllViews();
-                        rg.setVisibility(View.GONE);
-                        final ScrollView popup_container = main_activity.findViewById(R.id.popup_container);
-                        // need to invalidate/requestLayout so that the scrollview's scroll positions update - otherwise scrollBy below doesn't work properly, when the user reopens the radio buttons
-                        popup_container.invalidate();
-                        popup_container.requestLayout();
-                    }
-                    else {
-                        if( !created ) {
-                            addRadioOptionsToGroup(rg, sharedPreferences, supported_options_entries, supported_options_values, title, preference_key, default_value, current_option_value, test_key, listener);
-                            created = true;
-                        }
-                        rg.setVisibility(View.VISIBLE);
-                        final ScrollView popup_container = main_activity.findViewById(R.id.popup_container);
-                        popup_container.getViewTreeObserver().addOnGlobalLayoutListener(
-                                new OnGlobalLayoutListener() {
-                                    @Override
-                                    public void onGlobalLayout() {
-                                        if( MyDebug.LOG )
-                                            Log.d(TAG, "onGlobalLayout()");
-                                        // stop listening - only want to call this once!
-                                        if( Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1 ) {
-                                            popup_container.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                                        }
-                                        else {
-                                            popup_container.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                                        }
-
-                                        // so that the user sees the options appear, if the button is at the bottom of the current scrollview position
-                                        if( rg.getChildCount() > 0 ) {
-                                            int id = rg.getCheckedRadioButtonId();
-                                            if( id >= 0 && id < rg.getChildCount() ) {
-                                                popup_container.smoothScrollBy(0, rg.getChildAt(id).getBottom());
-                                            }
-                                        }
-                                    }
-                                }
-                        );
-                    }
-                    opened = !opened;
-                }
-            });
+            if (showCameraEffect) {
+                showMenu(showCameraEffect, opened, created, rg, title, main_activity, sharedPreferences, supported_options_entries, supported_options_values, title, preference_key, default_value, current_option_value, test_key, listener);
+            } else {
+                button.setOnClickListener(view -> {
+                    boolean openedd = false;
+                    boolean createdd = false;
+                    showMenu(showCameraEffect, openedd, createdd, rg, title, main_activity, sharedPreferences, supported_options_entries, supported_options_values, title, preference_key, default_value, current_option_value, test_key, listener);
+                });
+            }
 
             this.addView(rg);
             if( MyDebug.LOG )
                 Log.d(TAG, "addRadioOptionsToPopup time 5: " + (System.nanoTime() - debug_time));
         }
+    }
+
+    private void showMenu(boolean showCameraEffect, boolean opened, boolean created, RadioGroup rg, String title, MainActivity main_activity, SharedPreferences sharedPreferences, List<String> supported_options_entries, List<String> supported_options_values, String s, String preference_key, String default_value, String current_option_value, String test_key, RadioOptionsListener listener) {
+        if( MyDebug.LOG )
+            Log.d(TAG, "clicked to open radio buttons menu: " + title);
+        if( opened ) {
+            //rg.removeAllViews();
+            rg.setVisibility(View.GONE);
+            final ScrollView popup_container;
+            if (showCameraEffect) popup_container = main_activity.findViewById(R.id.cameraEffectContainer);
+            else {
+                // need to invalidate/requestLayout so that the scrollview's scroll positions update - otherwise scrollBy below doesn't work properly, when the user reopens the radio buttons
+                popup_container = main_activity.findViewById(R.id.popup_container);
+            }
+            popup_container.invalidate();
+            popup_container.requestLayout();
+        }
+        else {
+            if( !created ) {
+                addRadioOptionsToGroup(rg, sharedPreferences, supported_options_entries, supported_options_values, title, preference_key, default_value, current_option_value, test_key, listener);
+                created = true;
+            }
+            rg.setVisibility(View.VISIBLE);
+            final ScrollView popup_container;
+            if (showCameraEffect) popup_container = main_activity.findViewById(R.id.cameraEffectContainer);
+            else popup_container = main_activity.findViewById(R.id.popup_container);
+            popup_container.getViewTreeObserver().addOnGlobalLayoutListener(
+                    new OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            if( MyDebug.LOG )
+                                Log.d(TAG, "onGlobalLayout()");
+                            // stop listening - only want to call this once!
+                            if( Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1 ) {
+                                popup_container.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                            }
+                            else {
+                                popup_container.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                            }
+
+                            // so that the user sees the options appear, if the button is at the bottom of the current scrollview position
+                            if( rg.getChildCount() > 0 ) {
+                                int id = rg.getCheckedRadioButtonId();
+                                if( id >= 0 && id < rg.getChildCount() ) {
+                                    popup_container.smoothScrollBy(0, rg.getChildAt(id).getBottom());
+                                }
+                            }
+                        }
+                    }
+            );
+        }
+        opened = !opened;
     }
 
     private void addRadioOptionsToGroup(final RadioGroup rg, SharedPreferences sharedPreferences, List<String> supported_options_entries, List<String> supported_options_values, final String title, final String preference_key, final String default_value, String current_option_value, final String test_key, final RadioOptionsListener listener) {

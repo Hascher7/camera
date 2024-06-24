@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -44,6 +45,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.ZoomControls;
 
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
 import java.util.ArrayList;
@@ -102,6 +104,10 @@ public class MainUI {
     public int test_saved_popup_width;
     public int test_saved_popup_height;
     public volatile int test_navigation_gap;
+
+    private boolean showSettings;
+    private boolean showCameraEffect;
+    private boolean showFlash;
 
     public MainUI(MainActivity main_activity) {
         if( MyDebug.LOG )
@@ -494,7 +500,7 @@ public class MainUI {
             }
 //            buttons_permanent.add(main_activity.findViewById(R.id.settings));
             buttons_permanent.add(main_activity.findViewById(R.id.popup));
-            buttons_permanent.add(main_activity.findViewById(R.id.exposure));
+//            buttons_permanent.add(main_activity.findViewById(R.id.exposure));
             //buttons_permanent.add(main_activity.findViewById(R.id.switch_video));
             //buttons_permanent.add(main_activity.findViewById(R.id.switch_camera));
             buttons_permanent.add(main_activity.findViewById(R.id.exposure_lock));
@@ -785,6 +791,39 @@ public class MainUI {
 //            view.setLayoutParams(layoutParams);
 
             setFocusSeekbarsRotation();
+
+            view = main_activity.findViewById(R.id.exposure);
+            layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+            layoutParams.addRule(RelativeLayout.CENTER_VERTICAL, 0);
+            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
+            setMarginsForSystemUI(layoutParams, 0, 0, navigation_gap, 0);
+            setViewRotation(view, ui_rotation);
+            view.setLayoutParams(layoutParams);
+
+            view = main_activity.findViewById(R.id.flash);
+            layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+            layoutParams.addRule(RelativeLayout.CENTER_VERTICAL, 0);
+            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
+            setMarginsForSystemUI(layoutParams, 0, 0, navigation_gap, 250);
+            setViewRotation(view, ui_rotation);
+            view.setLayoutParams(layoutParams);
+
+            view = main_activity.findViewById(R.id.cameraEffect);
+            layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+            layoutParams.addRule(RelativeLayout.CENTER_VERTICAL, 0);
+            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
+            }
+            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 0);
+            setMarginsForSystemUI(layoutParams, 0, 250, navigation_gap, 0);
+            setViewRotation(view, ui_rotation);
+            view.setLayoutParams(layoutParams);
         }
 
         if( !popup_container_only )
@@ -1622,7 +1661,7 @@ public class MainUI {
     public void updateStoreLocationIcon() {
         ImageButton view = main_activity.findViewById(R.id.store_location);
         boolean enabled = main_activity.getApplicationInterface().getGeotaggingPref();
-        view.setImageResource(enabled ? R.drawable.ic_gps_fixed_red_48dp : R.drawable.ic_gps_fixed_white_48dp);
+        view.setImageResource(enabled ? R.drawable.earth_off : R.drawable.earth);
         view.setContentDescription( main_activity.getResources().getString(enabled ? R.string.preference_location_disable : R.string.preference_location_enable) );
     }
 
@@ -2476,7 +2515,7 @@ public class MainUI {
              *     See test testSwitchResolution().
              */
             if( cache_popup && !force_destroy_popup ) {
-                popup_view.setVisibility(View.GONE);
+                if (popup_view != null) popup_view.setVisibility(View.GONE);
             }
             else {
                 destroyPopup();
@@ -2504,8 +2543,19 @@ public class MainUI {
         if( popupIsOpen() ) {
             closePopup();
         }
-        ViewGroup popup_container = main_activity.findViewById(R.id.popup_container);
-        popup_container.removeAllViews();
+        if (showSettings) {
+            ViewGroup popup_container = main_activity.findViewById(R.id.popup_container);
+            popup_container.removeAllViews();
+        }
+        else if (showCameraEffect) {
+            ViewGroup popup_container = main_activity.findViewById(R.id.cameraEffectContainer);
+            popup_container.removeAllViews();
+        }
+        else if (showFlash) {
+            ViewGroup popup_container = main_activity.findViewById(R.id.flashContainer);
+            popup_container.removeAllViews();
+            popup_container.setVisibility(View.GONE);
+        }
         popup_view = null;
     }
 
@@ -2663,9 +2713,19 @@ public class MainUI {
      * differs depending whether we're in photo or video mode
      */
     public void togglePopupSettings() {
+        showSettings = true;
+        showCameraEffect = false;
+        showFlash = false;
+
         final ViewGroup popup_container = main_activity.findViewById(R.id.popup_container);
+        if (popup_view != null) {
+            popup_container.removeAllViews();
+            popup_view = null;
+        }
         if( popupIsOpen() ) {
             closePopup();
+            popup_container.removeAllViews();
+            popup_view = null;
             return;
         }
         if( main_activity.getPreview().getCameraController() == null ) {
@@ -2693,8 +2753,291 @@ public class MainUI {
             if( MyDebug.LOG )
                 Log.d(TAG, "create new popup_view");
             test_ui_buttons.clear();
-            popup_view = new PopupView(main_activity);
-            popup_container.addView(popup_view);
+            popup_view = new PopupView(main_activity, false, false);
+            if (popup_container.getChildCount() > 0) {
+                popup_container.removeAllViews();
+                popup_container.addView(popup_view);
+            } else popup_container.addView(popup_view);
+        }
+        else {
+            if( MyDebug.LOG )
+                Log.d(TAG, "use cached popup_view");
+            popup_view.setVisibility(View.VISIBLE);
+        }
+        popup_view_is_open = true;
+
+        if (main_activity.getBluetoothRemoteControl().remoteEnabled()) {
+            initRemoteControlForPopup();
+        }
+
+        // need to call layoutUI to make sure the new popup is oriented correctly
+        // but need to do after the layout has been done, so we have a valid width/height to use
+        // n.b., even though we only need the portion of layoutUI for the popup container, there
+        // doesn't seem to be any performance benefit in only calling that part
+        popup_container.getViewTreeObserver().addOnGlobalLayoutListener(
+                new OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        if( MyDebug.LOG )
+                            Log.d(TAG, "onGlobalLayout()");
+                        if( MyDebug.LOG )
+                            Log.d(TAG, "time after global layout: " + (System.currentTimeMillis() - time_s));
+                        layoutUI(true);
+                        if( MyDebug.LOG )
+                            Log.d(TAG, "time after layoutUI: " + (System.currentTimeMillis() - time_s));
+                        // stop listening - only want to call this once!
+                        if( Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1 ) {
+                            popup_container.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        }
+                        else {
+                            popup_container.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                        }
+
+                        UIPlacement ui_placement = computeUIPlacement();
+                        MainActivity.SystemOrientation system_orientation = main_activity.getSystemOrientation();
+                        float pivot_x;
+                        float pivot_y;
+                        switch( ui_placement ) {
+                            case UIPLACEMENT_TOP:
+                                if( main_activity.getPreview().getUIRotation() == 270 ) {
+                                    // portrait (when not locked)
+                                    pivot_x = 0.0f;
+                                    pivot_y = 1.0f;
+                                }
+                                else if( system_orientation == MainActivity.SystemOrientation.REVERSE_LANDSCAPE ) {
+                                    pivot_x = 1.0f;
+                                    pivot_y = 1.0f;
+                                }
+                                else {
+                                    pivot_x = 0.0f;
+                                    pivot_y = 0.0f;
+                                }
+                                break;
+                            case UIPLACEMENT_LEFT:
+                                if( system_orientation == MainActivity.SystemOrientation.PORTRAIT ) {
+                                    pivot_x = 0.0f;
+                                    pivot_y = 1.0f;
+                                }
+                                else if( system_orientation == MainActivity.SystemOrientation.REVERSE_LANDSCAPE ) {
+                                    pivot_x = 0.0f;
+                                    pivot_y = 0.0f;
+                                }
+                                else {
+                                    pivot_x = 1.0f;
+                                    pivot_y = 1.0f;
+                                }
+                                break;
+                            default:
+                                if( system_orientation == MainActivity.SystemOrientation.PORTRAIT ) {
+                                    pivot_x = 1.0f;
+                                    pivot_y = 1.0f;
+                                }
+                                else if( system_orientation == MainActivity.SystemOrientation.REVERSE_LANDSCAPE ) {
+                                    pivot_x = 0.0f;
+                                    pivot_y = 1.0f;
+                                }
+                                else {
+                                    pivot_x = 1.0f;
+                                    pivot_y = 0.0f;
+                                }
+                                break;
+                        }
+                        ScaleAnimation animation = new ScaleAnimation(0.0f, 1.0f, 0.0f, 1.0f, Animation.RELATIVE_TO_SELF, pivot_x, Animation.RELATIVE_TO_SELF, pivot_y);
+                        animation.setDuration(100);
+                        popup_container.setAnimation(animation);
+                    }
+                }
+        );
+
+        if( MyDebug.LOG )
+            Log.d(TAG, "time to create popup: " + (System.currentTimeMillis() - time_s));
+    }
+
+    public void toggleCameraEffectSettings() {
+        showSettings = false;
+        showCameraEffect = true;
+        showFlash = false;
+
+        final ViewGroup popup_container = main_activity.findViewById(R.id.cameraEffectContainer);
+        if (popup_view != null) {
+            popup_container.removeAllViews();
+            popup_view = null;
+        }
+        if( popupIsOpen() ) {
+            closePopup();
+            popup_container.removeAllViews();
+            popup_view = null;
+            return;
+        }
+        if( main_activity.getPreview().getCameraController() == null ) {
+            if( MyDebug.LOG )
+                Log.d(TAG, "camera not opened!");
+            return;
+        }
+
+        if( MyDebug.LOG )
+            Log.d(TAG, "open popup");
+
+        closeExposureUI();
+        main_activity.getPreview().cancelTimer(); // best to cancel any timer, in case we take a photo while settings window is open, or when changing settings
+        main_activity.stopAudioListeners();
+
+        final long time_s = System.currentTimeMillis();
+
+        {
+            popup_container.setBackgroundColor(Color.parseColor("#99000000"));
+            popup_container.setAlpha(0.9f);
+        }
+
+        if( popup_view == null ) {
+            if( MyDebug.LOG )
+                Log.d(TAG, "create new popup_view");
+            test_ui_buttons.clear();
+            popup_view = new PopupView(main_activity, true, false);
+            if (popup_container.getChildCount() > 0) {
+                popup_container.removeAllViews();
+                popup_container.addView(popup_view);
+            } else popup_container.addView(popup_view);
+        }
+        else {
+            if( MyDebug.LOG )
+                Log.d(TAG, "use cached popup_view");
+            popup_view.setVisibility(View.VISIBLE);
+        }
+        popup_view_is_open = true;
+
+        if (main_activity.getBluetoothRemoteControl().remoteEnabled()) {
+            initRemoteControlForPopup();
+        }
+
+        // need to call layoutUI to make sure the new popup is oriented correctly
+        // but need to do after the layout has been done, so we have a valid width/height to use
+        // n.b., even though we only need the portion of layoutUI for the popup container, there
+        // doesn't seem to be any performance benefit in only calling that part
+        popup_container.getViewTreeObserver().addOnGlobalLayoutListener(
+                new OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        if( MyDebug.LOG )
+                            Log.d(TAG, "onGlobalLayout()");
+                        if( MyDebug.LOG )
+                            Log.d(TAG, "time after global layout: " + (System.currentTimeMillis() - time_s));
+                        layoutUI(true);
+                        if( MyDebug.LOG )
+                            Log.d(TAG, "time after layoutUI: " + (System.currentTimeMillis() - time_s));
+                        // stop listening - only want to call this once!
+                        if( Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1 ) {
+                            popup_container.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        }
+                        else {
+                            popup_container.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                        }
+
+                        UIPlacement ui_placement = computeUIPlacement();
+                        MainActivity.SystemOrientation system_orientation = main_activity.getSystemOrientation();
+                        float pivot_x;
+                        float pivot_y;
+                        switch( ui_placement ) {
+                            case UIPLACEMENT_TOP:
+                                if( main_activity.getPreview().getUIRotation() == 270 ) {
+                                    // portrait (when not locked)
+                                    pivot_x = 0.0f;
+                                    pivot_y = 1.0f;
+                                }
+                                else if( system_orientation == MainActivity.SystemOrientation.REVERSE_LANDSCAPE ) {
+                                    pivot_x = 1.0f;
+                                    pivot_y = 1.0f;
+                                }
+                                else {
+                                    pivot_x = 0.0f;
+                                    pivot_y = 0.0f;
+                                }
+                                break;
+                            case UIPLACEMENT_LEFT:
+                                if( system_orientation == MainActivity.SystemOrientation.PORTRAIT ) {
+                                    pivot_x = 0.0f;
+                                    pivot_y = 1.0f;
+                                }
+                                else if( system_orientation == MainActivity.SystemOrientation.REVERSE_LANDSCAPE ) {
+                                    pivot_x = 0.0f;
+                                    pivot_y = 0.0f;
+                                }
+                                else {
+                                    pivot_x = 1.0f;
+                                    pivot_y = 1.0f;
+                                }
+                                break;
+                            default:
+                                if( system_orientation == MainActivity.SystemOrientation.PORTRAIT ) {
+                                    pivot_x = 1.0f;
+                                    pivot_y = 1.0f;
+                                }
+                                else if( system_orientation == MainActivity.SystemOrientation.REVERSE_LANDSCAPE ) {
+                                    pivot_x = 0.0f;
+                                    pivot_y = 1.0f;
+                                }
+                                else {
+                                    pivot_x = 1.0f;
+                                    pivot_y = 0.0f;
+                                }
+                                break;
+                        }
+                        ScaleAnimation animation = new ScaleAnimation(0.0f, 1.0f, 0.0f, 1.0f, Animation.RELATIVE_TO_SELF, pivot_x, Animation.RELATIVE_TO_SELF, pivot_y);
+                        animation.setDuration(100);
+                        popup_container.setAnimation(animation);
+                    }
+                }
+        );
+
+        if( MyDebug.LOG )
+            Log.d(TAG, "time to create popup: " + (System.currentTimeMillis() - time_s));
+    }
+
+    public void toggleFlashSettings() {
+        showSettings = false;
+        showCameraEffect = false;
+        showFlash = true;
+
+        final ViewGroup popup_container = main_activity.findViewById(R.id.flashContainer);
+        popup_container.setVisibility(View.VISIBLE);
+        if (popup_view != null) {
+            popup_container.removeAllViews();
+            popup_view = null;
+        }
+        if( popupIsOpen() ) {
+            closePopup();
+            popup_container.removeAllViews();
+            popup_view = null;
+            return;
+        }
+        if( main_activity.getPreview().getCameraController() == null ) {
+            if( MyDebug.LOG )
+                Log.d(TAG, "camera not opened!");
+            return;
+        }
+
+        if( MyDebug.LOG )
+            Log.d(TAG, "open popup");
+
+        closeExposureUI();
+        main_activity.getPreview().cancelTimer(); // best to cancel any timer, in case we take a photo while settings window is open, or when changing settings
+        main_activity.stopAudioListeners();
+
+        final long time_s = System.currentTimeMillis();
+
+        {
+            popup_container.setBackgroundColor(ContextCompat.getColor(main_activity, R.color.colorGrey));
+        }
+
+        if( popup_view == null ) {
+            if( MyDebug.LOG )
+                Log.d(TAG, "create new popup_view");
+            test_ui_buttons.clear();
+            popup_view = new PopupView(main_activity, false, true);
+            if (popup_container.getChildCount() > 0) {
+                popup_container.removeAllViews();
+                popup_container.addView(popup_view);
+            } else popup_container.addView(popup_view);
         }
         else {
             if( MyDebug.LOG )

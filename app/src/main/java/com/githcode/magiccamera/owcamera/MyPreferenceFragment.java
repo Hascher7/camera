@@ -5,6 +5,7 @@ import com.githcode.magiccamera.owcamera.preview.Preview;
 import com.githcode.magiccamera.owcamera.ui.ArraySeekBarPreference;
 import com.githcode.magiccamera.owcamera.ui.FolderChooserDialog;
 import com.githcode.magiccamera.owcamera.ui.MyEditTextPreference;
+import com.githcode.magiccamera.owcamera.ui.OnLayoutClickListener;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -32,9 +33,11 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.preference.TwoStatePreference;
 import android.text.Html;
 import android.text.SpannableString;
@@ -46,6 +49,7 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -1667,7 +1671,38 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
                 }
             });
         }
+        {
+            PreferenceScreen preferenceScreen = getPreferenceScreen();
+            PreferenceCategory preferenceCameraCategory = (PreferenceCategory) findPreference("preference_category_camera_controls");
+            PreferenceCategory preferencePhotoCategory = (PreferenceCategory) findPreference("preference_category_camera_quality");
+            PreferenceCategory preferenceOtherCategory = (PreferenceCategory) findPreference("preference_category_online");
 
+            if (preferenceScreen != null && preferencePhotoCategory != null && preferenceOtherCategory != null) {
+                preferenceScreen.removePreference(preferencePhotoCategory);
+                preferenceScreen.removePreference(preferenceOtherCategory);
+
+                CustomPreferenceCategory customPref = (CustomPreferenceCategory) findPreference("preference_custom_category_camera_controls");
+                if (customPref != null) {
+                    customPref.setOnLayoutClickListener(new OnLayoutClickListener() {
+                        @Override
+                        public void onCameraLayoutClick() {
+                            customPref.updateCameraUI(true);
+                            preferenceScreen.addPreference(preferenceCameraCategory);
+                            preferenceScreen.removePreference(preferencePhotoCategory);
+                            preferenceScreen.removePreference(preferenceOtherCategory);
+                        }
+
+                        @Override
+                        public void onPhotoLayoutClick() {
+                            customPref.updatePhotoUI(false);
+                            preferenceScreen.removePreference(preferenceCameraCategory);
+                            preferenceScreen.addPreference(preferencePhotoCategory);
+                            preferenceScreen.addPreference(preferenceOtherCategory);
+                        }
+                    });
+                }
+            }
+        }
         setupDependencies();
     }
 

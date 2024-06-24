@@ -3,4 +3,9 @@
     <color name="seekbar_background">#20000000</color>
     <color name="icons_background">#20000000</color> <!-- when used as background color for imagebutton, the rgb color seems to be ignored for Android 6 onwards, but still relevant for older versions -->
     <color name="icons_background_tint">#ff000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="colorBlue">#27A2DB</color>
+    <color name="colorTitle">#80CBC4</color>
+    <color name="colorGrey">#4A4A4A</color>
 </resources>
