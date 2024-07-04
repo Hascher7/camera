@@ -10,6 +10,12 @@ import com.githcode.magiccamera.owcamera.ui.DrawPreview;
 import com.githcode.magiccamera.owcamera.ui.FolderChooserDialog;
 import com.githcode.magiccamera.owcamera.ui.MainUI;
 import com.githcode.magiccamera.owcamera.ui.ManualSeekbars;
+import com.githcode.magiccamera.owcamera.utils.AdsManager;
+import com.githcode.magiccamera.owcamera.utils.Core;
+import com.githcode.magiccamera.owcamera.utils.Gallery;
+import com.google.ads.consent.AdProvider;
+import com.google.ads.consent.ConsentInformation;
+import com.google.android.gms.ads.MobileAds;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -46,6 +53,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
@@ -70,7 +78,6 @@ import android.speech.tts.TextToSpeech;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.exifinterface.media.ExifInterface;
 
 import android.text.InputFilter;
@@ -108,6 +115,8 @@ public class MainActivity extends AppCompatActivity {
     private static int activity_count = 0;
 
     private boolean app_is_paused = true;
+
+    public static Activity act;
 
     private SensorManager mSensorManager;
     private Sensor mSensorAccelerometer;
@@ -233,6 +242,11 @@ public class MainActivity extends AppCompatActivity {
     private long cached_display_rotation_time_ms;
     private int cached_display_rotation;
 
+    SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
+    int total = 1;
+    int totalcancel = 2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         long debug_time = 0;
@@ -240,6 +254,85 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onCreate: " + this);
             debug_time = System.currentTimeMillis();
         }
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        editor = sharedPreferences.edit();
+
+        totalcancel = sharedPreferences.getInt("rek", 2);
+        if (sharedPreferences.getBoolean("bool", true)) {
+
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+            alertDialog.setCancelable(false);
+
+            alertDialog.setTitle(R.string.ads_dialog_title);
+            alertDialog.setMessage(R.string.ads_dialog_message);
+            alertDialog.setNegativeButton(R.string.rate_dialog_no, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    editor.commit();
+                    MainActivity.super.onDestroy();
+                    MainActivity.super.onBackPressed();
+                }
+            });
+            alertDialog.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    editor.putBoolean("bool", false);
+                    editor.commit();
+                }
+            });
+            alertDialog.show();
+        } else {
+            totalcancel = totalcancel + 1;
+            editor.putInt("rek", totalcancel);
+            editor.commit();
+        }
+
+        if (sharedPreferences.getInt("rek", 2) % 6 == 0) {
+            editor.putBoolean("boole", true);
+            editor.commit();
+        }
+        if (sharedPreferences.getInt("rek", 2) % 6 == 0 && sharedPreferences.getBoolean("boole", true)) {
+
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+
+            alertDialog.setTitle(R.string.rate_dialog_title);
+            alertDialog.setMessage(R.string.rate_dialog_message);
+            alertDialog.setNeutralButton(R.string.rate_dialog_cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    totalcancel = totalcancel + 1;
+                    editor.putInt("rek", totalcancel);
+                    editor.commit();
+                }
+            });
+            alertDialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+
+                    editor.putBoolean("boole", false);
+
+                    editor.commit();
+                    launchOnlineApp();
+                }
+            });
+            alertDialog.setPositiveButton(R.string.rate_dialog_no, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    editor.putBoolean("boole", false);
+                    editor.commit();
+
+                }
+            });
+            alertDialog.show();
+        } else {
+            totalcancel = totalcancel + 1;
+            editor.putInt("rek", totalcancel);
+
+            editor.commit();
+        }
+
         activity_count++;
         if( MyDebug.LOG )
             Log.d(TAG, "activity_count: " + activity_count);
@@ -247,6 +340,17 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false); // initialise any unset preferences to their default values
+
+        act = this;
+        MobileAds.initialize(this, initializationStatus -> {});
+//        AdsManager.initiOrShowGdprForm(this, true, this);
+        initConsentForm();
+
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .edit()
+                .putBoolean("show_ads", true)
+                .apply();
+
         if( MyDebug.LOG )
             Log.d(TAG, "onCreate: time after setting default preference values: " + (System.currentTimeMillis() - debug_time));
 
@@ -270,7 +374,6 @@ public class MainActivity extends AppCompatActivity {
             if( MyDebug.LOG )
                 Log.d(TAG, "shortcut: " + getIntent().getAction());
         }
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // determine whether we should support "auto stabilise" feature
         // risk of running out of memory on lower end devices, due to manipulation of large bitmaps
@@ -650,7 +753,7 @@ public class MainActivity extends AppCompatActivity {
                 // We set the latest_version whether or not the dialog is shown - if we showed the first time dialog, we don't
                 // want to then show the What's New dialog next time we run! Similarly if the user had disabled showing the dialog,
                 // but then enables it, we still shouldn't show the dialog until the new time Open Camera upgrades.
-                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor = sharedPreferences.edit();
                 editor.putInt(PreferenceKeys.LatestVersionPreferenceKey, version_code);
                 editor.apply();
             }
@@ -719,6 +822,63 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    private void launchOnlineApp() {
+        if (MyDebug.LOG)
+            Log.d(TAG, "launchOnlineHelp");
+        try {
+            Uri uri1 = Uri.parse("Market://search?q=ScholaR");
+            Intent goToMarket1 = new Intent(Intent.ACTION_VIEW, uri1);
+            startActivity(goToMarket1);
+        } catch (ActivityNotFoundException e) {
+            Uri uri1 = Uri.parse("https://play.google.com/store/apps/details?id=com.githcode.magiccamera.owcamera");
+            Intent goToMarket1 = new Intent(Intent.ACTION_VIEW, uri1);
+            startActivity(goToMarket1);
+        }
+    }
+
+    private void initConsentForm() {
+        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("ads_show", false)) return;
+
+        AdsManager.initiOrShowGdprForm(this, true, this, false);
+
+        /*final ConsentInformation consentInformation = ConsentInformation.getInstance(this);
+        if (consentInformation.isRequestLocationInEeaOrUnknown()) {
+            List<AdProvider> adProviders = consentInformation.getAdProviders();
+            AdsManager.showConsentDialog(this, adProviders, consentInformation,
+                    new Handler.Callback() {
+                        @Override
+                        public boolean handleMessage(Message message) {
+                            PreferenceManager.getDefaultSharedPreferences(MainActivity.this)
+                                    .edit()
+                                    .putBoolean("ads_show", true)
+                                    .apply();
+
+                            AdsManager.initializeAdmob(MainActivity.this, MainActivity.this);
+                            //reklam goster
+                            Log.e(getClass().getName(), "reklam gostericek 1");
+                            return false;
+                        }
+                    });
+        }*/ /*else {
+            List<AdProvider> adProviders = consentInformation.getAdProviders();
+            AdsManager.showConsentDialog(this, adProviders, consentInformation,
+                    new Handler.Callback() {
+                        @Override
+                        public boolean handleMessage(Message message) {
+                            PreferenceManager.getDefaultSharedPreferences(MainActivity.this)
+                                    .edit()
+                                    .putBoolean("ads_show", true)
+                                    .apply();
+
+                            AdsManager.initializeAdmob(MainActivity.this, MainActivity.this);
+                            //reklam goster
+                            Log.e(getClass().getName(), "reklam gostericek 1");
+                            return false;
+                        }
+                    });
+        }*/
     }
 
     /** Whether to use codepaths that are compatible with scoped storage.
@@ -1446,6 +1606,10 @@ public class MainActivity extends AppCompatActivity {
         mainUI.changeSeekbar(is_target_distance ? R.id.focus_bracketing_target_seekbar : R.id.focus_seekbar, change);
     }
 
+    public void changeFocusDistance(int change) {
+        mainUI.changeSeekbar(R.id.focus_seekbar, change);
+    }
+
     private final SensorEventListener accelerometerListener = new SensorEventListener() {
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -1939,9 +2103,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void clickedTakePhoto(View view) {
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        editor = sharedPreferences.edit();
+        int takephotocount = sharedPreferences.getInt("takephotocount", 0);
+        if(takephotocount >=5 /*&& Utils.isLoaded()*/)
+        {
+            PreferenceManager
+                    .getDefaultSharedPreferences(this)
+                    .edit()
+                    .putBoolean("show_ads", true)
+                    .apply();
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    AdsManager.showAds(MainActivity.this, new AdsManager.AdsClosedCallback() {
+                        @Override
+                        public void launchActivity() {
+                            editor.putInt("takephotocount", 0);
+                            editor.apply();
+                        }
+                    }, MainActivity.this);
+                }
+            });
+        } else {
+            editor.putInt("takephotocount", takephotocount + 1);
+            editor.apply();
+            Log.d("foto", String.valueOf(takephotocount));
+        }
+
         if( MyDebug.LOG )
             Log.d(TAG, "clickedTakePhoto");
-        this.takePicture(false);
+        takePicture(false);
     }
 
     /** User has clicked button to take a photo snapshot whilst video recording.
@@ -2429,9 +2622,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void clickedSettings(View view) {
+        if (Core.settingpopupsayi == 1) {
+            Core.clikcedsettings = false;
+            openSettings();
+        } else if (Core.settingpopupsayi == 0) {
+            Core.clikcedsettings = true;
+            openSettings();
+
+            if (Core.settinsayi == 0 && Core.clikcedsettings == true) {
+                PreferenceManager
+                        .getDefaultSharedPreferences(this)
+                        .edit()
+                        .putBoolean("show_ads", true)
+                        .apply();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AdsManager.showAds(MainActivity.this, new AdsManager.AdsClosedCallback() {
+                            @Override
+                            public void launchActivity() {
+                                Core.settinsayi = 1;
+                            }
+                        }, MainActivity.this);
+                    }
+                });
+            }
+        }
         if( MyDebug.LOG )
             Log.d(TAG, "clickedSettings");
-        openSettings();
     }
 
     public boolean popupIsOpen() {
@@ -2452,7 +2671,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void clickedPopupSettings(View view) {
-        if( MyDebug.LOG )
+        if (Core.settinsayi == 0) {
+            Core.clikcedpopup = true;
+            if (Core.clikcedpopup && Core.settingpopupsayi == 0) {
+                PreferenceManager
+                        .getDefaultSharedPreferences(this)
+                        .edit()
+                        .putBoolean("show_ads", true)
+                        .apply();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AdsManager.showAds(MainActivity.this, new AdsManager.AdsClosedCallback() {
+                            @Override
+                            public void launchActivity() {
+                                Core.settingpopupsayi = 1;
+                            }
+                        }, MainActivity.this);
+                    }
+                });
+            }
+        }
+        if (MyDebug.LOG)
             Log.d(TAG, "clickedPopupSettings");
         mainUI.togglePopupSettings();
     }
@@ -2685,67 +2926,67 @@ public class MainActivity extends AppCompatActivity {
         stopAudioListeners();
 
         Bundle bundle = new Bundle();
-        bundle.putInt("cameraId", this.preview.getCameraId());
+        bundle.putInt("cameraId", preview.getCameraId());
         bundle.putInt("nCameras", preview.getCameraControllerManager().getNumberOfCameras());
-        bundle.putBoolean("camera_open", this.preview.getCameraController() != null);
-        bundle.putString("camera_api", this.preview.getCameraAPI());
-        bundle.putBoolean("using_android_l", this.preview.usingCamera2API());
-        if( this.preview.getCameraController() != null ) {
-            bundle.putInt("camera_orientation", this.preview.getCameraController().getCameraOrientation());
+        bundle.putBoolean("camera_open", preview.getCameraController() != null);
+        bundle.putString("camera_api", preview.getCameraAPI());
+        bundle.putBoolean("using_android_l", preview.usingCamera2API());
+        if( preview.getCameraController() != null ) {
+            bundle.putInt("camera_orientation", preview.getCameraController().getCameraOrientation());
         }
         bundle.putString("photo_mode_string", getPhotoModeString(applicationInterface.getPhotoMode(), true));
-        bundle.putBoolean("supports_auto_stabilise", this.supports_auto_stabilise);
-        bundle.putBoolean("supports_flash", this.preview.supportsFlash());
-        bundle.putBoolean("supports_force_video_4k", this.supports_force_video_4k);
-        bundle.putBoolean("supports_camera2", this.supports_camera2);
-        bundle.putBoolean("supports_face_detection", this.preview.supportsFaceDetection());
-        bundle.putBoolean("supports_raw", this.preview.supportsRaw());
-        bundle.putBoolean("supports_burst_raw", this.supportsBurstRaw());
-        bundle.putBoolean("supports_hdr", this.supportsHDR());
-        bundle.putBoolean("supports_nr", this.supportsNoiseReduction());
-        bundle.putBoolean("supports_panorama", this.supportsPanorama());
+        bundle.putBoolean("supports_auto_stabilise", supports_auto_stabilise);
+        bundle.putBoolean("supports_flash", preview.supportsFlash());
+        bundle.putBoolean("supports_force_video_4k", supports_force_video_4k);
+        bundle.putBoolean("supports_camera2", supports_camera2);
+        bundle.putBoolean("supports_face_detection", preview.supportsFaceDetection());
+        bundle.putBoolean("supports_raw", preview.supportsRaw());
+        bundle.putBoolean("supports_burst_raw", supportsBurstRaw());
+        bundle.putBoolean("supports_hdr", supportsHDR());
+        bundle.putBoolean("supports_nr", supportsNoiseReduction());
+        bundle.putBoolean("supports_panorama", supportsPanorama());
         bundle.putBoolean("has_gyro_sensors", applicationInterface.getGyroSensor().hasSensors());
-        bundle.putBoolean("supports_expo_bracketing", this.supportsExpoBracketing());
-        bundle.putBoolean("supports_preview_bitmaps", this.supportsPreviewBitmaps());
-        bundle.putInt("max_expo_bracketing_n_images", this.maxExpoBracketingNImages());
-        bundle.putBoolean("supports_exposure_compensation", this.preview.supportsExposures());
-        bundle.putInt("exposure_compensation_min", this.preview.getMinimumExposure());
-        bundle.putInt("exposure_compensation_max", this.preview.getMaximumExposure());
-        bundle.putBoolean("supports_iso_range", this.preview.supportsISORange());
-        bundle.putInt("iso_range_min", this.preview.getMinimumISO());
-        bundle.putInt("iso_range_max", this.preview.getMaximumISO());
-        bundle.putBoolean("supports_exposure_time", this.preview.supportsExposureTime());
-        bundle.putBoolean("supports_exposure_lock", this.preview.supportsExposureLock());
-        bundle.putBoolean("supports_white_balance_lock", this.preview.supportsWhiteBalanceLock());
-        bundle.putLong("exposure_time_min", this.preview.getMinimumExposureTime());
-        bundle.putLong("exposure_time_max", this.preview.getMaximumExposureTime());
-        bundle.putBoolean("supports_white_balance_temperature", this.preview.supportsWhiteBalanceTemperature());
-        bundle.putInt("white_balance_temperature_min", this.preview.getMinimumWhiteBalanceTemperature());
-        bundle.putInt("white_balance_temperature_max", this.preview.getMaximumWhiteBalanceTemperature());
-        bundle.putBoolean("is_multi_cam", this.is_multi_cam);
-        bundle.putBoolean("supports_optical_stabilization", this.preview.supportsOpticalStabilization());
-        bundle.putBoolean("optical_stabilization_enabled", this.preview.getOpticalStabilization());
-        bundle.putBoolean("supports_video_stabilization", this.preview.supportsVideoStabilization());
-        bundle.putBoolean("video_stabilization_enabled", this.preview.getVideoStabilization());
-        bundle.putBoolean("can_disable_shutter_sound", this.preview.canDisableShutterSound());
-        bundle.putInt("tonemap_max_curve_points", this.preview.getTonemapMaxCurvePoints());
-        bundle.putBoolean("supports_tonemap_curve", this.preview.supportsTonemapCurve());
-        bundle.putBoolean("supports_photo_video_recording", this.preview.supportsPhotoVideoRecording());
+        bundle.putBoolean("supports_expo_bracketing", supportsExpoBracketing());
+        bundle.putBoolean("supports_preview_bitmaps", supportsPreviewBitmaps());
+        bundle.putInt("max_expo_bracketing_n_images", maxExpoBracketingNImages());
+        bundle.putBoolean("supports_exposure_compensation", preview.supportsExposures());
+        bundle.putInt("exposure_compensation_min", preview.getMinimumExposure());
+        bundle.putInt("exposure_compensation_max", preview.getMaximumExposure());
+        bundle.putBoolean("supports_iso_range", preview.supportsISORange());
+        bundle.putInt("iso_range_min", preview.getMinimumISO());
+        bundle.putInt("iso_range_max", preview.getMaximumISO());
+        bundle.putBoolean("supports_exposure_time", preview.supportsExposureTime());
+        bundle.putBoolean("supports_exposure_lock", preview.supportsExposureLock());
+        bundle.putBoolean("supports_white_balance_lock", preview.supportsWhiteBalanceLock());
+        bundle.putLong("exposure_time_min", preview.getMinimumExposureTime());
+        bundle.putLong("exposure_time_max", preview.getMaximumExposureTime());
+        bundle.putBoolean("supports_white_balance_temperature", preview.supportsWhiteBalanceTemperature());
+        bundle.putInt("white_balance_temperature_min", preview.getMinimumWhiteBalanceTemperature());
+        bundle.putInt("white_balance_temperature_max", preview.getMaximumWhiteBalanceTemperature());
+        bundle.putBoolean("is_multi_cam", is_multi_cam);
+        bundle.putBoolean("supports_optical_stabilization", preview.supportsOpticalStabilization());
+        bundle.putBoolean("optical_stabilization_enabled", preview.getOpticalStabilization());
+        bundle.putBoolean("supports_video_stabilization", preview.supportsVideoStabilization());
+        bundle.putBoolean("video_stabilization_enabled", preview.getVideoStabilization());
+        bundle.putBoolean("can_disable_shutter_sound", preview.canDisableShutterSound());
+        bundle.putInt("tonemap_max_curve_points", preview.getTonemapMaxCurvePoints());
+        bundle.putBoolean("supports_tonemap_curve", preview.supportsTonemapCurve());
+        bundle.putBoolean("supports_photo_video_recording", preview.supportsPhotoVideoRecording());
         bundle.putFloat("camera_view_angle_x", preview.getViewAngleX(false));
         bundle.putFloat("camera_view_angle_y", preview.getViewAngleY(false));
         bundle.putFloat("min_zoom_factor", preview.getMinZoomRatio());
         bundle.putFloat("max_zoom_factor", preview.getMaxZoomRatio());
 
-        putBundleExtra(bundle, "color_effects", this.preview.getSupportedColorEffects());
-        putBundleExtra(bundle, "scene_modes", this.preview.getSupportedSceneModes());
-        putBundleExtra(bundle, "white_balances", this.preview.getSupportedWhiteBalances());
-        putBundleExtra(bundle, "isos", this.preview.getSupportedISOs());
+        putBundleExtra(bundle, "color_effects", preview.getSupportedColorEffects());
+        putBundleExtra(bundle, "scene_modes", preview.getSupportedSceneModes());
+        putBundleExtra(bundle, "white_balances", preview.getSupportedWhiteBalances());
+        putBundleExtra(bundle, "isos", preview.getSupportedISOs());
         bundle.putInt("magnetic_accuracy", magneticSensor.getMagneticAccuracy());
-        bundle.putString("iso_key", this.preview.getISOKey());
-        if( this.preview.getCameraController() != null ) {
+        bundle.putString("iso_key", preview.getISOKey());
+        if(preview.getCameraController() != null ) {
             bundle.putString("parameters_string", preview.getCameraController().getParametersString());
         }
-        List<String> antibanding = this.preview.getSupportedAntiBanding();
+        List<String> antibanding = preview.getSupportedAntiBanding();
         putBundleExtra(bundle, "antibanding", antibanding);
         if( antibanding != null ) {
             String [] entries_arr = new String[antibanding.size()];
@@ -2756,7 +2997,7 @@ public class MainActivity extends AppCompatActivity {
             }
             bundle.putStringArray("antibanding_entries", entries_arr);
         }
-        List<String> edge_modes = this.preview.getSupportedEdgeModes();
+        List<String> edge_modes = preview.getSupportedEdgeModes();
         putBundleExtra(bundle, "edge_modes", edge_modes);
         if( edge_modes != null ) {
             String [] entries_arr = new String[edge_modes.size()];
@@ -2767,7 +3008,7 @@ public class MainActivity extends AppCompatActivity {
             }
             bundle.putStringArray("edge_modes_entries", entries_arr);
         }
-        List<String> noise_reduction_modes = this.preview.getSupportedNoiseReductionModes();
+        List<String> noise_reduction_modes = preview.getSupportedNoiseReductionModes();
         putBundleExtra(bundle, "noise_reduction_modes", noise_reduction_modes);
         if( noise_reduction_modes != null ) {
             String [] entries_arr = new String[noise_reduction_modes.size()];
@@ -2779,7 +3020,7 @@ public class MainActivity extends AppCompatActivity {
             bundle.putStringArray("noise_reduction_modes_entries", entries_arr);
         }
 
-        List<CameraController.Size> preview_sizes = this.preview.getSupportedPreviewSizes();
+        List<CameraController.Size> preview_sizes = preview.getSupportedPreviewSizes();
         if( preview_sizes != null ) {
             int [] widths = new int[preview_sizes.size()];
             int [] heights = new int[preview_sizes.size()];
@@ -2799,7 +3040,7 @@ public class MainActivity extends AppCompatActivity {
         // resolution preference, even if that doesn't support burst and we're in a burst mode).
         // This is to be consistent with other preferences, e.g., we still show RAW settings even though that might not be supported
         // for the current photo mode.
-        List<CameraController.Size> sizes = this.preview.getSupportedPictureSizes(false);
+        List<CameraController.Size> sizes = preview.getSupportedPictureSizes(false);
         if( sizes != null ) {
             int [] widths = new int[sizes.size()];
             int [] heights = new int[sizes.size()];
@@ -2824,27 +3065,27 @@ public class MainActivity extends AppCompatActivity {
         String fps_value = applicationInterface.getVideoFPSPref(); // n.b., this takes into account slow motion mode putting us into a high frame rate
         if( MyDebug.LOG )
             Log.d(TAG, "fps_value: " + fps_value);
-        List<String> video_quality = this.preview.getSupportedVideoQuality(fps_value);
+        List<String> video_quality = preview.getSupportedVideoQuality(fps_value);
         if( video_quality == null || video_quality.size() == 0 ) {
             Log.e(TAG, "can't find any supported video sizes for current fps!");
             // fall back to unfiltered list
-            video_quality = this.preview.getVideoQualityHander().getSupportedVideoQuality();
+            video_quality = preview.getVideoQualityHander().getSupportedVideoQuality();
         }
-        if( video_quality != null && this.preview.getCameraController() != null ) {
+        if( video_quality != null && preview.getCameraController() != null ) {
             String [] video_quality_arr = new String[video_quality.size()];
             String [] video_quality_string_arr = new String[video_quality.size()];
             int i=0;
             for(String value: video_quality) {
                 video_quality_arr[i] = value;
-                video_quality_string_arr[i] = this.preview.getCamcorderProfileDescription(value);
+                video_quality_string_arr[i] = preview.getCamcorderProfileDescription(value);
                 i++;
             }
             bundle.putStringArray("video_quality", video_quality_arr);
             bundle.putStringArray("video_quality_string", video_quality_string_arr);
 
-            boolean is_high_speed = this.preview.fpsIsHighSpeed(fps_value);
+            boolean is_high_speed = preview.fpsIsHighSpeed(fps_value);
             bundle.putBoolean("video_is_high_speed", is_high_speed);
-            String video_quality_preference_key = PreferenceKeys.getVideoQualityPreferenceKey(this.preview.getCameraId(), is_high_speed);
+            String video_quality_preference_key = PreferenceKeys.getVideoQualityPreferenceKey(preview.getCameraId(), is_high_speed);
             if( MyDebug.LOG )
                 Log.d(TAG, "video_quality_preference_key: " + video_quality_preference_key);
             bundle.putString("video_quality_preference_key", video_quality_preference_key);
@@ -2862,7 +3103,7 @@ public class MainActivity extends AppCompatActivity {
         bundle.putBoolean("video_high_speed", preview.isVideoHighSpeed());
         bundle.putFloat("video_capture_rate_factor", applicationInterface.getVideoCaptureRateFactor());
 
-        List<CameraController.Size> video_sizes = this.preview.getVideoQualityHander().getSupportedVideoSizes();
+        List<CameraController.Size> video_sizes = preview.getVideoQualityHander().getSupportedVideoSizes();
         if( video_sizes != null ) {
             int [] widths = new int[video_sizes.size()];
             int [] heights = new int[video_sizes.size()];
@@ -2887,7 +3128,7 @@ public class MainActivity extends AppCompatActivity {
                     video_fps.add(fps);
                     video_fps_high_speed.add(true);
                 }
-                else if( this.preview.getVideoQualityHander().videoSupportsFrameRate(fps) ) {
+                else if(preview.getVideoQualityHander().videoSupportsFrameRate(fps) ) {
                     video_fps.add(fps);
                     video_fps_high_speed.add(false);
                 }
@@ -2915,8 +3156,8 @@ public class MainActivity extends AppCompatActivity {
             bundle.putBooleanArray("video_fps_high_speed", video_fps_high_speed_array);
         }
 
-        putBundleExtra(bundle, "flash_values", this.preview.getSupportedFlashValues());
-        putBundleExtra(bundle, "focus_values", this.preview.getSupportedFocusValues());
+        putBundleExtra(bundle, "flash_values", preview.getSupportedFlashValues());
+        putBundleExtra(bundle, "focus_values", preview.getSupportedFocusValues());
 
         preferencesListener.startListening();
 
@@ -4292,6 +4533,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void clickedGallery(View view) {
+        if (!Gallery.birinciresimgosterildi && Gallery.sayi == 0) {
+            Gallery.birinciresimgosterildi = true;
+        }
+        Log.d(TAG, "bak");
+        if (Gallery.birinciresimgosterildi && Gallery.sayi == 1) {
+            PreferenceManager
+                    .getDefaultSharedPreferences(this)
+                    .edit()
+                    .putBoolean("show_ads", true)
+                    .apply();
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    AdsManager.showAds(MainActivity.this, new AdsManager.AdsClosedCallback() {
+                        @Override
+                        public void launchActivity() {
+                            Gallery.birinciresimgosterildi = false;
+                        }
+                    }, MainActivity.this);
+                }
+            });
+        } else if (Gallery.birinciresimgosterildi && Gallery.sayi == 0) {
+            Gallery.sayi = 1;
+        }
+
         if( MyDebug.LOG )
             Log.d(TAG, "clickedGallery");
         openGallery();
@@ -4985,6 +5252,41 @@ public class MainActivity extends AppCompatActivity {
      *                       recording. If false, either take a photo or start/stop video depending
      *                       on the current mode.
      */
+    public void takePicture() {
+        if (MyDebug.LOG)
+            Log.d(TAG, "takePicture");
+
+        /*if (test_panorama) {
+            if (applicationInterface.getGyroSensor().isRecording()) {
+                if (MyDebug.LOG)
+                    Log.d(TAG, "panorama complete");
+                applicationInterface.stopPanorama();
+                return;
+            } else {
+                if (MyDebug.LOG)
+                    Log.d(TAG, "start panorama");
+                applicationInterface.startPanorama();
+            }
+        }*/
+
+        this.takePicturePressed();
+    }
+
+    void takePicturePressed() {
+        if (MyDebug.LOG)
+            Log.d(TAG, "takePicturePressed");
+
+        closePopup();
+
+        /*if (applicationInterface.getGyroSensor().isRecording()) {
+            if (MyDebug.LOG)
+                Log.d(TAG, "set next panorama point");
+            applicationInterface.setNextPanoramaPoint();
+        }
+
+        this.benimPreview.takePicturePressed();*/
+    }
+
     public void takePicture(boolean photo_snapshot) {
         if( MyDebug.LOG )
             Log.d(TAG, "takePicture");

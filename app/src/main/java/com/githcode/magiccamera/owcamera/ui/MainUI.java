@@ -493,17 +493,17 @@ public class MainUI {
 //                layoutParams.addRule(right_of, 0);
 //                setMarginsForSystemUI(layoutParams, 0, gallery_top_gap, gallery_navigation_gap, 0);
 //                view.setLayoutParams(layoutParams);
-                setViewRotation(view, ui_rotation);
+//                setViewRotation(view, ui_rotation);
             }
             else {
-                buttons_permanent.add(main_activity.findViewById(R.id.gallery));
+//                buttons_permanent.add(main_activity.findViewById(R.id.gallery));
             }
-//            buttons_permanent.add(main_activity.findViewById(R.id.settings));
-            buttons_permanent.add(main_activity.findViewById(R.id.popup));
+            buttons_permanent.add(main_activity.findViewById(R.id.settings));
+//            buttons_permanent.add(main_activity.findViewById(R.id.popup));
 //            buttons_permanent.add(main_activity.findViewById(R.id.exposure));
             //buttons_permanent.add(main_activity.findViewById(R.id.switch_video));
             //buttons_permanent.add(main_activity.findViewById(R.id.switch_camera));
-            buttons_permanent.add(main_activity.findViewById(R.id.exposure_lock));
+//            buttons_permanent.add(main_activity.findViewById(R.id.exposure_lock));
             buttons_permanent.add(main_activity.findViewById(R.id.white_balance_lock));
             buttons_permanent.add(main_activity.findViewById(R.id.cycle_raw));
             buttons_permanent.add(main_activity.findViewById(R.id.store_location));
@@ -631,6 +631,37 @@ public class MainUI {
 
             // end icon panel
 
+            /*view = main_activity.findViewById(R.id.gui_anchor);
+            layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
+            layoutParams.addRule(align_parent_left, 0);
+            layoutParams.addRule(align_parent_right, RelativeLayout.TRUE);
+            layoutParams.addRule(align_parent_top, RelativeLayout.TRUE);
+            layoutParams.addRule(align_parent_bottom, 0);
+            layoutParams.addRule(left_of, 0);
+            layoutParams.addRule(right_of, 0);
+            view.setLayoutParams(layoutParams);
+            setViewRotation(view, ui_rotation);*/
+
+            view = main_activity.findViewById(R.id.gallery);
+            layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
+            layoutParams.addRule(align_parent_top, 0);
+            layoutParams.addRule(align_parent_bottom, RelativeLayout.TRUE);
+            layoutParams.addRule(align_parent_right, RelativeLayout.TRUE);
+            layoutParams.addRule(align_parent_left, 0);
+            setMarginsForSystemUI1(layoutParams, 0, 0, navigation_gap, 0);
+            view.setLayoutParams(layoutParams);
+            setViewRotation(view, ui_rotation);
+
+            view = main_activity.findViewById(R.id.settings);
+            layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
+            layoutParams.addRule(align_parent_top, RelativeLayout.TRUE);
+            layoutParams.addRule(align_parent_bottom, 0);
+            layoutParams.addRule(align_parent_right, RelativeLayout.TRUE);
+            layoutParams.addRule(align_parent_left, 0);
+            setMarginsForSystemUI1(layoutParams, 0, 0, navigation_gap, 0);
+            view.setLayoutParams(layoutParams);
+            setViewRotation(view, ui_rotation);
+
             view = main_activity.findViewById(R.id.take_photo);
             layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
             layoutParams.addRule(align_parent_left, 0);
@@ -730,6 +761,16 @@ public class MainUI {
             view.setLayoutParams(layoutParams);
             setViewRotation(view, ui_rotation);
 
+            view = main_activity.findViewById(R.id.exposure_lock);
+            layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
+            layoutParams.addRule(align_parent_top, 0);
+            layoutParams.addRule(align_parent_bottom, RelativeLayout.TRUE);
+            layoutParams.addRule(align_parent_right, 0);
+            layoutParams.addRule(align_parent_left, RelativeLayout.TRUE);
+            setMarginsForSystemUI1(layoutParams, 0, 0, navigation_gap, 0);
+            view.setLayoutParams(layoutParams);
+            setViewRotation(view, ui_rotation);
+
             view = main_activity.findViewById(R.id.zoom);
             layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
             layoutParams.addRule(align_parent_left, 0);
@@ -744,34 +785,34 @@ public class MainUI {
             layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
             // if we are showing the zoom control, the align next to that; otherwise have it aligned close to the edge of screen
             if( sharedPreferences.getBoolean(PreferenceKeys.ShowZoomControlsPreferenceKey, false) ) {
-               /* layoutParams.addRule(align_parent_left, 0);
-                layoutParams.addRule(align_parent_right, RelativeLayout.TRUE);
+                layoutParams.addRule(align_parent_left, RelativeLayout.TRUE);
+                layoutParams.addRule(align_parent_right, 0);
                 layoutParams.addRule(align_parent_top, 0);
                 layoutParams.addRule(align_parent_bottom, 0);
                 layoutParams.addRule(above, R.id.zoom);
                 layoutParams.addRule(below, 0);
                 layoutParams.addRule(left_of, 0);
-                layoutParams.addRule(right_of, 0);*/
+                layoutParams.addRule(right_of, 0);
                 // margins set below in setFixedRotation()
             }
             else {
-                /*layoutParams.addRule(align_parent_left, 0);
+                layoutParams.addRule(align_parent_left, 0);
                 layoutParams.addRule(align_parent_right, RelativeLayout.TRUE);
-                layoutParams.addRule(align_parent_top, 0);
-                layoutParams.addRule(align_parent_bottom, RelativeLayout.TRUE);
+                layoutParams.addRule(align_parent_top, RelativeLayout.TRUE);
+                layoutParams.addRule(align_parent_bottom, 0);
                 // margins set below in setFixedRotation()
                 // need to clear the others, in case we turn zoom controls on/off
                 layoutParams.addRule(above, 0);
                 layoutParams.addRule(below, 0);
                 layoutParams.addRule(left_of, 0);
-                layoutParams.addRule(right_of, 0);*/
+                layoutParams.addRule(right_of, 0);
             }
 //            view.setLayoutParams(layoutParams);
             int margin = (int) (20 * scale + 0.5f); // convert dps to pixels
             setFixedRotationZoom(main_activity.findViewById(R.id.zoom_seekbar), 0, 0, margin+navigation_gap, 0);
 
             view = main_activity.findViewById(R.id.focus_seekbar);
-            /*layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
+            layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
             layoutParams.addRule(left_of, R.id.zoom_seekbar);
             layoutParams.addRule(right_of, 0);
             layoutParams.addRule(above, 0);
@@ -780,50 +821,67 @@ public class MainUI {
             layoutParams.addRule(align_parent_bottom, RelativeLayout.TRUE);
             layoutParams.addRule(align_parent_left, 0);
             layoutParams.addRule(align_parent_right, 0);
-            view.setLayoutParams(layoutParams);*/
+            view.setLayoutParams(layoutParams);
 
             view = main_activity.findViewById(R.id.focus_bracketing_target_seekbar);
             layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
-//            layoutParams.addRule(left_of, R.id.zoom_seekbar);
-//            layoutParams.addRule(right_of, 0);
-//            layoutParams.addRule(above, R.id.focus_seekbar);
-//            layoutParams.addRule(below, 0);
-//            view.setLayoutParams(layoutParams);
+            layoutParams.addRule(left_of, R.id.zoom_seekbar);
+            layoutParams.addRule(right_of, 0);
+            layoutParams.addRule(above, R.id.focus_seekbar);
+            layoutParams.addRule(below, 0);
+            view.setLayoutParams(layoutParams);
 
             setFocusSeekbarsRotation();
 
             view = main_activity.findViewById(R.id.exposure);
-            layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
-            layoutParams.addRule(RelativeLayout.CENTER_VERTICAL, 0);
-            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 0);
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
-            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
+            layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
+            layoutParams.addRule(align_parent_left, RelativeLayout.TRUE);
+            layoutParams.addRule(align_parent_right, 0);
+            layoutParams.addRule(align_parent_top, 0);
+            layoutParams.addRule(align_parent_bottom, 0);
+            layoutParams.addRule(center_vertical, RelativeLayout.TRUE);
+            layoutParams.addRule(center_horizontal, 0);
             setMarginsForSystemUI(layoutParams, 0, 0, navigation_gap, 0);
-            setViewRotation(view, ui_rotation);
             view.setLayoutParams(layoutParams);
+            setViewRotation(view, ui_rotation);
 
             view = main_activity.findViewById(R.id.flash);
-            layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
-            layoutParams.addRule(RelativeLayout.CENTER_VERTICAL, 0);
-            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 0);
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
-            setMarginsForSystemUI(layoutParams, 0, 0, navigation_gap, 250);
-            setViewRotation(view, ui_rotation);
+            layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
+            layoutParams.addRule(align_parent_left, RelativeLayout.TRUE);
+            layoutParams.addRule(align_parent_right, 0);
+            layoutParams.addRule(align_parent_top, 0);
+            layoutParams.addRule(align_parent_bottom, 0);
+            layoutParams.addRule(ui_independent_above, 0);
+            layoutParams.addRule(ui_independent_below, R.id.take_photo);
+            layoutParams.addRule(ui_independent_left_of, 0);
+            layoutParams.addRule(ui_independent_right_of, 0);
+            setMarginsForSystemUI(layoutParams, 0, 0, navigation_gap, 0);
             view.setLayoutParams(layoutParams);
+            setViewRotation(view, ui_rotation);
 
             view = main_activity.findViewById(R.id.cameraEffect);
-            layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
-            layoutParams.addRule(RelativeLayout.CENTER_VERTICAL, 0);
-            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 0);
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
-            }
-            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 0);
-            setMarginsForSystemUI(layoutParams, 0, 250, navigation_gap, 0);
-            setViewRotation(view, ui_rotation);
+            layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
+            layoutParams.addRule(align_parent_left, RelativeLayout.TRUE);
+            layoutParams.addRule(align_parent_right, 0);
+            layoutParams.addRule(align_parent_top, 0);
+            layoutParams.addRule(align_parent_bottom, 0);
+            layoutParams.addRule(ui_independent_above, R.id.take_photo);
+            layoutParams.addRule(ui_independent_below, 0);
+            layoutParams.addRule(ui_independent_left_of, 0);
+            layoutParams.addRule(ui_independent_right_of, 0);
+            setMarginsForSystemUI(layoutParams, 0, 0, navigation_gap, 0);
             view.setLayoutParams(layoutParams);
+            setViewRotation(view, ui_rotation);
+
+            view = main_activity.findViewById(R.id.popup);
+            layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
+            layoutParams.addRule(align_parent_top, RelativeLayout.TRUE);
+            layoutParams.addRule(align_parent_bottom, 0);
+            layoutParams.addRule(align_parent_right, 0);
+            layoutParams.addRule(align_parent_left, RelativeLayout.TRUE);
+            setMarginsForSystemUI1(layoutParams, 0, 0, navigation_gap, 0);
+            view.setLayoutParams(layoutParams);
+            setViewRotation(view, ui_rotation);
         }
 
         if( !popup_container_only )
@@ -1043,16 +1101,29 @@ public class MainUI {
         }
     }
 
+    void setMarginsForSystemUI1(RelativeLayout.LayoutParams layoutParams, int left, int top, int right, int bottom) {
+        MainActivity.SystemOrientation system_orientation = main_activity.getSystemOrientation();
+        if (system_orientation == MainActivity.SystemOrientation.PORTRAIT) {
+            layoutParams.setMargins(left, top, right, bottom);
+        } else if (system_orientation == MainActivity.SystemOrientation.REVERSE_LANDSCAPE) {
+            // Adjust margins for reverse landscape
+            layoutParams.setMargins(right, bottom, left, top);
+        } else {
+            // Landscape orientation
+            layoutParams.setMargins(left, top, right, bottom);
+        }
+    }
+
     void setMarginsForSystemUIZoom(RelativeLayout.LayoutParams layoutParams, int left, int top, int right, int bottom) {
         MainActivity.SystemOrientation system_orientation = main_activity.getSystemOrientation();
         if( system_orientation == MainActivity.SystemOrientation.PORTRAIT ) {
             layoutParams.setMargins(bottom, left, top+25, 360);
         }
         else if( system_orientation == MainActivity.SystemOrientation.REVERSE_LANDSCAPE ) {
-            layoutParams.setMargins(right, bottom, left, top);
+            layoutParams.setMargins(180, bottom, left, 25);
         }
         else {
-            layoutParams.setMargins(left, top, right, bottom);
+            layoutParams.setMargins(left, 25, 180, bottom);
         }
     }
 
@@ -1099,7 +1170,7 @@ public class MainUI {
             setMarginsForSystemUIZoom(layoutParams, diff+left, -diff+top, diff+right, diff+bottom);
         }
         else {
-//            setMarginsForSystemUI(layoutParams, left, top, right, bottom);
+            setMarginsForSystemUIZoom(layoutParams, left, top, right, bottom);
         }
         view.setLayoutParams(layoutParams);
     }

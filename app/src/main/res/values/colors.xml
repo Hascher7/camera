@@ -8,4 +8,6 @@
     <color name="colorBlue">#27A2DB</color>
     <color name="colorTitle">#80CBC4</color>
     <color name="colorGrey">#4A4A4A</color>
+    <color name="red">#e91f1f</color>
+    <color name="green">#4bf202</color>
 </resources>

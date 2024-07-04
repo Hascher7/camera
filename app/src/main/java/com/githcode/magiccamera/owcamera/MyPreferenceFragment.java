@@ -6,6 +6,9 @@ import com.githcode.magiccamera.owcamera.ui.ArraySeekBarPreference;
 import com.githcode.magiccamera.owcamera.ui.FolderChooserDialog;
 import com.githcode.magiccamera.owcamera.ui.MyEditTextPreference;
 import com.githcode.magiccamera.owcamera.ui.OnLayoutClickListener;
+import com.githcode.magiccamera.owcamera.utils.AdsManager;
+import com.google.ads.consent.AdProvider;
+import com.google.ads.consent.ConsentInformation;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -28,6 +31,8 @@ import android.graphics.Point;
 //import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -1539,6 +1544,57 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
                     }
                     return false;
                 }
+            });
+        }
+        {
+            PreferenceScreen screen = getPreferenceScreen();
+            final Preference pref = getPreferenceManager().findPreference("preference_EU");
+            final ConsentInformation consentInformation = ConsentInformation.getInstance(getActivity());
+            if (consentInformation.isRequestLocationInEeaOrUnknown()) pref.setEnabled(true); else screen.removePreference(pref);
+
+            pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference arg0) {
+                    if( pref.getKey().equals("preference_EU") ) {
+                        if( MyDebug.LOG )
+                            Log.d(TAG, "user clicked to EU");
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            AdsManager.initiOrShowGdprForm(getContext(), true, getActivity(), true);
+                        }
+
+                        /*if (consentInformation.isRequestLocationInEeaOrUnknown()) {
+                            List<AdProvider> adProviders = consentInformation.getAdProviders();
+                            AdsManager.showConsentDialog(getActivity(), adProviders, consentInformation,
+                                    new Handler.Callback() {
+                                        @Override
+                                        public boolean handleMessage(Message message) {
+                                            AdsManager.initializeAdmob(getActivity().getApplicationContext(), getActivity());
+                                            //reklam goster
+                                            Log.e(getClass().getName(), "reklam gostericek 1");
+                                            return false;
+                                        }
+                                    });
+                        }*/ /*else {
+                            List<AdProvider> adProviders = consentInformation.getAdProviders();
+                            AdsManager.showConsentDialog(getActivity(), adProviders, consentInformation,
+                                    new Handler.Callback() {
+                                        @Override
+                                        public boolean handleMessage(Message message) {
+                                            AdsManager.initializeAdmob(getActivity().getApplicationContext(), getActivity());
+                                            //reklam goster
+                                            Log.e(getClass().getName(), "reklam gostericek 1");
+                                            return false;
+                                        }
+                                    });
+                        }*/
+                        // malertDialog.show();
+                    } else {
+
+                    }
+                    return false;
+                }
+
             });
         }
         {

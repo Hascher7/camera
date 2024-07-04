@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+
+    android:background="@drawable/dialogadsbackground">
+
+
+    <LinearLayout
+        android:id="@+id/gdprListLinear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/gdprBackButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/buttonstyleback"
+            android:text="Back"
+            android:textSize="12sp"
+            android:textColor="@color/black"
+            />
+
+        <ListView
+            android:id="@+id/gdprListVoew"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal">
+    <LinearLayout
+        android:id="@+id/gdprAciklamaLinear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/gdprAciklamaTxView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/eutitle"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/gdprmessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/eumessage"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:textStyle="normal" />
+
+        <LinearLayout
+            android:id="@+id/gdprButtonsLinear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/gdprListButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="View All"
+                android:visibility="gone" />
+
+
+            <Button
+                android:id="@+id/gdprAcceptButton"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:background="@drawable/buttonstyleaccept"
+                android:text="@string/acceptads" />
+
+            <Button
+                android:id="@+id/gdprRejectButton"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/buttonstylereject"
+                android:padding="5dp"
+                android:text="@string/rejectads" />
+
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+
+
+
+
+    </ScrollView>
+
+
+</LinearLayout>

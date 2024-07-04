@@ -1387,6 +1387,12 @@
                 />
 
             <Preference
+                android:key="preference_EU"
+                android:title="@string/preference_EU"
+                android:summary="@string/preference_EU_summary"
+                android:icon="@drawable/adscontrol" />
+
+            <Preference
                 android:key="preference_reset"
                 android:title="@string/preference_reset"
                 android:summary="@string/preference_reset_summary"
