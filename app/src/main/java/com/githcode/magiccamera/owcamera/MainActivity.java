@@ -2103,8 +2103,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void clickedTakePhoto(View view) {
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        editor = sharedPreferences.edit();
         int takephotocount = sharedPreferences.getInt("takephotocount", 0);
         if(takephotocount >=5 /*&& Utils.isLoaded()*/)
         {
@@ -2114,21 +2112,33 @@ public class MainActivity extends AppCompatActivity {
                     .putBoolean("show_ads", true)
                     .apply();
 
+            PreferenceManager
+                    .getDefaultSharedPreferences(this)
+                    .edit()
+                    .putInt("takephotocount", 0)
+                    .apply();
+
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     AdsManager.showAds(MainActivity.this, new AdsManager.AdsClosedCallback() {
                         @Override
                         public void launchActivity() {
-                            editor.putInt("takephotocount", 0);
-                            editor.apply();
+                            PreferenceManager
+                                    .getDefaultSharedPreferences(MainActivity.this)
+                                    .edit()
+                                    .putInt("takephotocount", 0)
+                                    .apply();
                         }
                     }, MainActivity.this);
                 }
             });
         } else {
-            editor.putInt("takephotocount", takephotocount + 1);
-            editor.apply();
+            PreferenceManager
+                    .getDefaultSharedPreferences(this)
+                    .edit()
+                    .putInt("takephotocount", takephotocount + 1)
+                    .apply();
             Log.d("foto", String.valueOf(takephotocount));
         }
 
