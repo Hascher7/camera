@@ -259,7 +259,7 @@ public class PermissionHandler {
                     camera_denied_time_ms = System.currentTimeMillis();
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
-                    // Open Camera doesn't need to do anything: the camera will remain closed
+                    // Magic Camera doesn't need to do anything: the camera will remain closed
                 }
                 return;
             }
@@ -281,7 +281,7 @@ public class PermissionHandler {
                     storage_denied_time_ms = System.currentTimeMillis();
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
-                    // Open Camera doesn't need to do anything: the camera will remain closed
+                    // Magic Camera doesn't need to do anything: the camera will remain closed
                 }
                 return;
             }

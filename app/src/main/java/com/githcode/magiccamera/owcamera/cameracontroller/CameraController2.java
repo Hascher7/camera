@@ -201,7 +201,7 @@ public class CameraController2 extends CameraController {
     private float focus_bracketing_target_distance = 0.0f;
     private boolean focus_bracketing_add_infinity = false;
     // for BURSTTYPE_NORMAL:
-    private boolean burst_for_noise_reduction; // chooses number of burst images and other settings for Open Camera's noise reduction (NR) photo mode
+    private boolean burst_for_noise_reduction; // chooses number of burst images and other settings for Magic Camera's noise reduction (NR) photo mode
     private boolean noise_reduction_low_light; // if burst_for_noise_reduction==true, whether to optimise for low light scenes
     private int burst_requested_n_images; // if burst_for_noise_reduction==false, this gives the number of images for the burst
     //for BURSTTYPE_CONTINUOUS:
@@ -2164,14 +2164,14 @@ public class CameraController2 extends CameraController {
                 Log.d(TAG, "get camera id list");
             this.cameraIdS = manager.getCameraIdList()[cameraId];
             if( MyDebug.LOG )
-                Log.d(TAG, "about to open camera: " + cameraIdS);
+                Log.d(TAG, "about to Magic Camera: " + cameraIdS);
             manager.openCamera(cameraIdS, myStateCallback, handler);
             if( MyDebug.LOG )
-                Log.d(TAG, "open camera request complete");
+                Log.d(TAG, "Magic Camera request complete");
         }
         catch(CameraAccessException e) {
             if( MyDebug.LOG ) {
-                Log.e(TAG, "failed to open camera: CameraAccessException");
+                Log.e(TAG, "failed to Magic Camera: CameraAccessException");
                 Log.e(TAG, "reason: " + e.getReason());
                 Log.e(TAG, "message: " + e.getMessage());
             }
@@ -2181,7 +2181,7 @@ public class CameraController2 extends CameraController {
         catch(UnsupportedOperationException e) {
             // Google Camera catches UnsupportedOperationException
             if( MyDebug.LOG ) {
-                Log.e(TAG, "failed to open camera: UnsupportedOperationException");
+                Log.e(TAG, "failed to Magic Camera: UnsupportedOperationException");
                 Log.e(TAG, "message: " + e.getMessage());
             }
             e.printStackTrace();
@@ -2190,7 +2190,7 @@ public class CameraController2 extends CameraController {
         catch(SecurityException e) {
             // Google Camera catches SecurityException
             if( MyDebug.LOG ) {
-                Log.e(TAG, "failed to open camera: SecurityException");
+                Log.e(TAG, "failed to Magic Camera: SecurityException");
                 Log.e(TAG, "message: " + e.getMessage());
             }
             e.printStackTrace();
@@ -2199,7 +2199,7 @@ public class CameraController2 extends CameraController {
         catch(IllegalArgumentException e) {
             // have seen this from Google Play
             if( MyDebug.LOG ) {
-                Log.e(TAG, "failed to open camera: IllegalArgumentException");
+                Log.e(TAG, "failed to Magic Camera: IllegalArgumentException");
                 Log.e(TAG, "message: " + e.getMessage());
             }
             e.printStackTrace();
@@ -2210,7 +2210,7 @@ public class CameraController2 extends CameraController {
             // cameraId is within the valid range! Although potentially this could happen if
             // getCameraIdList() returns an empty list.
             if( MyDebug.LOG ) {
-                Log.e(TAG, "failed to open camera: ArrayIndexOutOfBoundsException");
+                Log.e(TAG, "failed to Magic Camera: ArrayIndexOutOfBoundsException");
                 Log.e(TAG, "message: " + e.getMessage());
             }
             e.printStackTrace();
@@ -2784,7 +2784,7 @@ public class CameraController2 extends CameraController {
         // REQUEST_AVAILABLE_CAPABILITIES_BURST_CAPTURE, but I had a user complain that NR mode at least had previously
         // (before 1.45) worked for them. It might be that this can still work, just not at 20fps.
         // So instead set to true for all LIMITED devices. Still keep block for LEGACY devices (which definitely shouldn't
-        // support fast burst - and which Open Camera never allowed with Camera2 before 1.45).
+        // support fast burst - and which Magic Camera never allowed with Camera2 before 1.45).
         // Also may affect Samsung Galaxy A8(2018).
         camera_features.supports_burst = CameraControllerManager2.isHardwareLevelSupported(characteristics, CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LIMITED);
 
@@ -2967,7 +2967,7 @@ public class CameraController2 extends CameraController {
             Display display = activity.getWindowManager().getDefaultDisplay();
             display.getRealSize(display_size);
             // getRealSize() is adjusted based on the current rotation, so should already be landscape format, but it
-            // would be good to not assume Open Camera runs in landscape mode (if we ever ran in portrait mode,
+            // would be good to not assume Magic Camera runs in landscape mode (if we ever ran in portrait mode,
             // we'd still want display_size.x > display_size.y as preview resolutions also have width > height)
             if( display_size.x < display_size.y ) {
                 //noinspection SuspiciousNameCombination
@@ -6245,7 +6245,7 @@ public class CameraController2 extends CameraController {
                 Log.d(TAG, "focus mode: " + (focus_mode == null ? "null" : focus_mode));
             if( focus_mode == null ) {
                 // we preserve the old Camera API where calling autoFocus() on a device without autofocus immediately calls the callback
-                // (unclear if Open Camera needs this, but just to be safe and consistent between camera APIs)
+                // (unclear if Magic Camera needs this, but just to be safe and consistent between camera APIs)
                 if( MyDebug.LOG )
                     Log.d(TAG, "no focus mode");
                 cb.onAutoFocus(true);

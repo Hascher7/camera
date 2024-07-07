@@ -89,7 +89,7 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
      * opened when onDestroy() is called are closed.
      * Normally this shouldn't be needed - the settings is usually only closed by the user pressing Back,
      * which can only be done once any opened dialogs are also closed. But this is required if we want to
-     * programmatically close the settings - this is done in MainActivity.onNewIntent(), so that if Open Camera
+     * programmatically close the settings - this is done in MainActivity.onNewIntent(), so that if Magic Camera
      * is launched from the homescreen again when the settings was opened, we close the settings.
      * UPDATE: At the time of writing, we don't set android:launchMode="singleTask", so onNewIntent() is not called,
      * so this code isn't necessary - but there shouldn't be harm to leave it here for future use.
@@ -866,7 +866,7 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
             pg.removePreference(pref);
         }*/
 
-        {
+        /*{
             final Preference pref = findPreference("preference_online_help");
             pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
                 @Override
@@ -881,7 +881,7 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
                     return false;
                 }
             });
-        }
+        }*/
 
         {
             final Preference pref = findPreference("preference_privacy_policy");
@@ -901,14 +901,14 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
 
         // licences
 
-        {
+        /*{
             final Preference pref = findPreference("preference_licence_open_camera");
             pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference arg0) {
                     if( pref.getKey().equals("preference_licence_open_camera") ) {
                         if( MyDebug.LOG )
-                            Log.d(TAG, "user clicked open camera licence");
+                            Log.d(TAG, "user clicked Magic Camera licence");
                         // display the GPL v3 text
                         displayTextDialog(R.string.preference_licence_open_camera, "gpl-3.0.txt");
                         return false;
@@ -967,7 +967,7 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
                     return false;
                 }
             });
-        }
+        }*/
 
         // end licences
 
@@ -1161,7 +1161,7 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
             });
         }*/
 
-        {
+        /*{
             final Preference pref = findPreference("preference_about");
             pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
                 @Override
@@ -1184,7 +1184,7 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
                                 Log.d(TAG, "NameNotFoundException exception trying to get version number");
                             e.printStackTrace();
                         }
-                        about_string.append("Open Camera v");
+                        about_string.append("Magic Camera v");
                         about_string.append(version);
                         about_string.append("\nCode: ");
                         about_string.append(version_code);
@@ -1529,7 +1529,7 @@ public class MyPreferenceFragment extends PreferenceFragment implements OnShared
                     return false;
                 }
             });
-        }
+        }*/
 
         {
             final Preference pref = findPreference("preference_restore_settings");

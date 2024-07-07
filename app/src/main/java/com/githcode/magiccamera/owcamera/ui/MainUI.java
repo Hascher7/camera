@@ -1204,7 +1204,7 @@ public class MainUI {
             // (and appears partially off-screen). Unfortunately have been unable to fix - and trying
             // to force the popup container to have a particular width just means some of the contents
             // (e.g., Timer) are missing. But at least stop caching it, so that reopening the popup
-            // should fix it, rather than having to restart or pause/resume Open Camera.
+            // should fix it, rather than having to restart or pause/resume Magic Camera.
             // Also note, normally we should expect popup_width == popup_view.getTotalWidth(), but
             // have put a fudge factor of 1.2 just in case it's normally slightly larger on some
             // devices.
@@ -2142,7 +2142,7 @@ public class MainUI {
      */
     int getMaxHeightDp(boolean centred) {
         Display display = main_activity.getWindowManager().getDefaultDisplay();
-        // ensure we have display for landscape orientation (even if we ever allow Open Camera
+        // ensure we have display for landscape orientation (even if we ever allow Magic Camera
         DisplayMetrics outMetrics = new DisplayMetrics();
         display.getMetrics(outMetrics);
 

@@ -2124,7 +2124,7 @@ public class MyApplicationInterface extends BasicApplicationInterface {
                     if( store_location && !preference_stamp_geo_address.equals("preference_stamp_geo_address_no") ) {
                         // try to find an address
                         if( main_activity.isAppPaused() ) {
-                            // seems safer to not try to initiate potential network connections (via geocoder) if Open Camera
+                            // seems safer to not try to initiate potential network connections (via geocoder) if Magic Camera
                             // is paused - this shouldn't happen, since we stop video when paused, but just to be safe
                             if( MyDebug.LOG )
                                 Log.d(TAG, "don't call geocoder for video subtitles  as app is paused?!");

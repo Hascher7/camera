@@ -13,8 +13,8 @@ import android.os.Build;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-/** Handles the Open Camera lock screen widget. Lock screen widgets are no
- *  longer supported in Android 5 onwards (instead Open Camera can be launched
+/** Handles the Magic Camera lock screen widget. Lock screen widgets are no
+ *  longer supported in Android 5 onwards (instead Magic Camera can be launched
  *  from the lock screen using the standard camera icon), but this is kept here
  *  for older Android versions.
  */
@@ -56,10 +56,10 @@ public class MyWidgetProvider extends AppWidgetProvider {
             RemoteViews remote_views = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
             remote_views.setOnClickPendingIntent(R.id.widget_launch_open_camera, pendingIntent);
             /*if( sharedPreferences.getBoolean(MainActivity.getShowWhenLockedPreferenceKey(), true) ) {
-                remote_views.setTextViewText(R.id.launch_open_camera, "Open Camera (unlocked)");
+                remote_views.setTextViewText(R.id.launch_open_camera, "Magic Camera (unlocked)");
             }
             else {
-                remote_views.setTextViewText(R.id.launch_open_camera, "Open Camera (locked)");
+                remote_views.setTextViewText(R.id.launch_open_camera, "Magic Camera (locked)");
             }*/
 
             appWidgetManager.updateAppWidget(appWidgetId, remote_views);

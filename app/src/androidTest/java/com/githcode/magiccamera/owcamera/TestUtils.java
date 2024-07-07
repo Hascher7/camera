@@ -130,7 +130,7 @@ public class TestUtils {
 
     /** Loads bitmap from supplied filename.
      *  Note that on Android 10+ (with scoped storage), this uses Storage Access Framework, which
-     *  means Open Camera must have SAF permission to the folder DCIM/testOpenCamera.
+     *  means Magic Camera must have SAF permission to the folder DCIM/testOpenCamera.
      */
     private static Bitmap getBitmapFromFileCore(MainActivity activity, String filename, int inSampleSize) throws FileNotFoundException {
         Log.d(TAG, "getBitmapFromFileCore: " + filename);
@@ -402,8 +402,8 @@ public class TestUtils {
      *  To use these tests, the testdata/ subfolder should be manually copied to the test device in the DCIM/testOpenCamera/
      *  folder (so you have DCIM/testOpenCamera/testdata/). We don't use assets/ as we'd end up with huge APK sizes which takes
      *  time to transfer to the device everytime we run the tests.
-     * @param iso The ISO of the middle image (for testing Open Camera's "smart" contrast enhancement). If set to -1, then use "always" contrast enhancement.
-     * @param exposure_time The exposure time of the middle image (for testing Open Camera's "smart" contrast enhancement)
+     * @param iso The ISO of the middle image (for testing Magic Camera's "smart" contrast enhancement). If set to -1, then use "always" contrast enhancement.
+     * @param exposure_time The exposure time of the middle image (for testing Magic Camera's "smart" contrast enhancement)
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static HistogramDetails subTestHDR(MainActivity activity, List<Bitmap> inputs, String output_name, boolean test_dro, int iso, long exposure_time, HDRProcessor.TonemappingAlgorithm tonemapping_algorithm/*, HDRTestCallback test_callback*/) {

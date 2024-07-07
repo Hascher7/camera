@@ -107,7 +107,7 @@ import android.widget.ZoomControls;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-/** The main Activity for Open Camera.
+/** The main Activity for Magic Camera.
  */
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean saf_dialog_from_preferences; // if a SAF dialog is opened, this records whether we opened it from the Preferences
     private boolean camera_in_background; // whether the camera is covered by a fragment/dialog (such as settings or folder picker)
     private GestureDetector gestureDetector;
-    private boolean screen_is_locked; // whether screen is "locked" - this is Open Camera's own lock to guard against accidental presses, not the standard Android lock
+    private boolean screen_is_locked; // whether screen is "locked" - this is Magic Camera's own lock to guard against accidental presses, not the standard Android lock
     private final Map<Integer, Bitmap> preloaded_bitmap_resources = new Hashtable<>();
     private ValueAnimator gallery_save_anim;
     private boolean last_continuous_fast_burst; // whether the last photo operation was a continuous_fast_burst
@@ -752,7 +752,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 // We set the latest_version whether or not the dialog is shown - if we showed the first time dialog, we don't
                 // want to then show the What's New dialog next time we run! Similarly if the user had disabled showing the dialog,
-                // but then enables it, we still shouldn't show the dialog until the new time Open Camera upgrades.
+                // but then enables it, we still shouldn't show the dialog until the new time Magic Camera upgrades.
                 editor = sharedPreferences.edit();
                 editor.putInt(PreferenceKeys.LatestVersionPreferenceKey, version_code);
                 editor.apply();
@@ -794,7 +794,7 @@ public class MainActivity extends AppCompatActivity {
         // create notification channel - only needed on Android 8+
         // update: notifications now removed due to needing permissions on Android 13+
         /*if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ) {
-            CharSequence name = "Open Camera Image Saving";
+            CharSequence name = "Magic Camera Image Saving";
             String description = "Notification channel for processing and saving images in the background";
             int importance = NotificationManager.IMPORTANCE_LOW;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
@@ -952,7 +952,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /* This method sets the preference defaults which are set specific for a particular device.
-     * This method should be called when Open Camera is run for the very first time after installation,
+     * This method should be called when Magic Camera is run for the very first time after installation,
      * or when the user has requested to "Reset settings".
      */
     void setDeviceDefaults() {
@@ -1056,28 +1056,28 @@ public class MainActivity extends AppCompatActivity {
         }
         else if( (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && MyTileService.TILE_ID.equals(action)) || ACTION_SHORTCUT_CAMERA.equals(action) ) {
             if( MyDebug.LOG )
-                Log.d(TAG, "launching from quick settings tile or application shortcut for Open Camera: photo mode");
+                Log.d(TAG, "launching from quick settings tile or application shortcut for Magic Camera: photo mode");
             applicationInterface.setVideoPref(false);
         }
         else if( (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && MyTileServiceVideo.TILE_ID.equals(action)) || ACTION_SHORTCUT_VIDEO.equals(action) ) {
             if( MyDebug.LOG )
-                Log.d(TAG, "launching from quick settings tile or application shortcut for Open Camera: video mode");
+                Log.d(TAG, "launching from quick settings tile or application shortcut for Magic Camera: video mode");
             applicationInterface.setVideoPref(true);
         }
         else if( (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && MyTileServiceFrontCamera.TILE_ID.equals(action)) || ACTION_SHORTCUT_SELFIE.equals(action) ) {
             if( MyDebug.LOG )
-                Log.d(TAG, "launching from quick settings tile or application shortcut for Open Camera: selfie mode");
+                Log.d(TAG, "launching from quick settings tile or application shortcut for Magic Camera: selfie mode");
             done_facing = true;
             applicationInterface.switchToCamera(true);
         }
         else if( ACTION_SHORTCUT_GALLERY.equals(action) ) {
             if( MyDebug.LOG )
-                Log.d(TAG, "launching from application shortcut for Open Camera: gallery");
+                Log.d(TAG, "launching from application shortcut for Magic Camera: gallery");
             openGallery();
         }
         else if( ACTION_SHORTCUT_SETTINGS.equals(action) ) {
             if( MyDebug.LOG )
-                Log.d(TAG, "launching from application shortcut for Open Camera: settings");
+                Log.d(TAG, "launching from application shortcut for Magic Camera: settings");
             openSettings();
         }
 
@@ -1190,7 +1190,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /** Handles users updating to a version with scoped storage (this could be Android 10 users upgrading
-     *  to the version of Open Camera with scoped storage; or users who later upgrade to Android 10).
+     *  to the version of Magic Camera with scoped storage; or users who later upgrade to Android 10).
      *  With scoped storage, we no longer support saving outside of DCIM/ when not using SAF.
      *  This updates if necessary both the current save location, and the save folder history.
      */
@@ -3299,7 +3299,7 @@ public class MainActivity extends AppCompatActivity {
                     // (opening an extension session seems to take longer, so better not to block
                     // the UI thread).
                     if( MyDebug.LOG )
-                        Log.d(TAG, "need to reopen camera for changes to extension session");
+                        Log.d(TAG, "need to reMagic Camera for changes to extension session");
                     need_reopen = true;
                 }
             }
@@ -3935,7 +3935,7 @@ public class MainActivity extends AppCompatActivity {
             // We put this here instead of onConfigurationChanged() as onConfigurationChanged() isn't called when switching from
             // reverse landscape to landscape orientation: so it's needed to fix if the user starts in portrait, goes to settings
             // or a dialog, then switches to reverse landscape, then exits settings/dialog - the system orientation will switch
-            // to landscape (which Open Camera is forced to).
+            // to landscape (which Magic Camera is forced to).
             mainUI.layoutUI();
         }
 
@@ -3954,7 +3954,7 @@ public class MainActivity extends AppCompatActivity {
         if( sharedPreferences.getBoolean(PreferenceKeys.ShowWhenLockedPreferenceKey, false) ) {
             if( MyDebug.LOG )
                 Log.d(TAG, "do show when locked");
-            // keep Open Camera on top of screen-lock (will still need to unlock when going to gallery or settings)
+            // keep Magic Camera on top of screen-lock (will still need to unlock when going to gallery or settings)
             showWhenLocked(true);
         }
         else {
@@ -4605,7 +4605,7 @@ public class MainActivity extends AppCompatActivity {
         if( uri != null && !MainActivity.useScopedStorage() ) {
             // check uri exists
             // note, with scoped storage this isn't reliable when using SAF - since we don't actually have permission to access mediastore URIs that
-            // were created via Storage Access Framework, even though Open Camera was the application that saved them(!)
+            // were created via Storage Access Framework, even though Magic Camera was the application that saved them(!)
             try {
                 ContentResolver cr = getContentResolver();
                 ParcelFileDescriptor pfd = cr.openFileDescriptor(uri, "r");
@@ -4639,7 +4639,7 @@ public class MainActivity extends AppCompatActivity {
             if( !is_raw ) {
                 // REVIEW_ACTION means we can view video files without autoplaying.
                 // However, Google Photos at least has problems with going to a RAW photo (in RAW only mode),
-                // unless we first pause and resume Open Camera.
+                // unless we first pause and resume Magic Camera.
                 // Update: on Galaxy S10e with Android 11 at least, no longer seem to have problems, but leave
                 // the check for is_raw just in case for older devices.
                 if( MyDebug.LOG )
@@ -5033,7 +5033,7 @@ public class MainActivity extends AppCompatActivity {
         return alertDialog;
     }
 
-    /** Opens Open Camera's own (non-Storage Access Framework) dialog to select a folder.
+    /** Opens Magic Camera's own (non-Storage Access Framework) dialog to select a folder.
      */
     private void openFolderChooserDialog() {
         if( MyDebug.LOG )
@@ -5350,7 +5350,7 @@ public class MainActivity extends AppCompatActivity {
         this.preview.takePicturePressed(photo_snapshot, continuous_fast_burst);
     }
 
-    /** Lock the screen - this is Open Camera's own lock to guard against accidental presses,
+    /** Lock the screen - this is Magic Camera's own lock to guard against accidental presses,
      *  not the standard Android lock.
      */
     void lockScreen() {

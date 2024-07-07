@@ -93,7 +93,7 @@ public class VideoProfile {
         if( MyDebug.LOG )
             Log.d(TAG, "set frame rate: " + this.videoFrameRate);
         media_recorder.setVideoFrameRate(this.videoFrameRate);
-        // it's probably safe to always call setCaptureRate, but to be safe (and keep compatibility with old Open Camera versions), we only do so when needed
+        // it's probably safe to always call setCaptureRate, but to be safe (and keep compatibility with old Magic Camera versions), we only do so when needed
         if( this.videoCaptureRate != (double)this.videoFrameRate ) {
             if( MyDebug.LOG )
                 Log.d(TAG, "set capture rate: " + this.videoCaptureRate);

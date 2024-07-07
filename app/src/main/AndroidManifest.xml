@@ -46,7 +46,7 @@
             android:clearTaskOnLaunch="true"
             android:exported="true"
             >
-            <!-- clearTaskOnLaunch set to true, so if user goes to gallery then returns to home, we return to the camera rather than remaining in gallery if user relaunches Open Camera -->
+            <!-- clearTaskOnLaunch set to true, so if user goes to gallery then returns to home, we return to the camera rather than remaining in gallery if user relaunches Magic Camera -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

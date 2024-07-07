@@ -73,7 +73,7 @@ public class SettingsManager {
         return loadSettings(inputStream);
     }
 
-    /** Loads all settings from the supplied inputStream. If successful, Open Camera will restart.
+    /** Loads all settings from the supplied inputStream. If successful, Magic Camera will restart.
      *  The supplied inputStream will be closed.
      * @return Whether the operation was succesful.
      */
